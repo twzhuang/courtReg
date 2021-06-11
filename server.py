@@ -9,6 +9,17 @@ app = Flask(__name__)
 app.secret_key = "I am a secret key"
 
 db = "ebc_db"
+
+'''
+To Do That I can remember:
+1. Need to add timer/clock
+2. make html for all courts 
+3. style 
+4. reset database at a certain time
+5. create function that allows admin to reserve court time
+6. add court html to admin page and add button next to each name that removes it
+7. create admin login check to get to admin page
+'''
 """
 information about table: Table is called users and has 4 values. 
 first value is an ID (int) for future possible use, 
@@ -32,7 +43,7 @@ courts = {
     "court8" : [],
 }
 
-#This chunk resets all players to not on a court when program starts
+#This chunk resets all players to not on a court when program starts. 
 mysql = connectToMySQL(db)
 query = "update ebc_db.users set onCourt=0"
 mysql.query_db(query)
@@ -97,7 +108,7 @@ def removeUserFromCourt():
 
 @app.route("/addUserToCourt", methods=["POST"])
 def addUserToCourt():
-
+    #checks to see if pin enters matches. If it does it changes users onCourt value to 0 and adds name to courts dictionary
     isValid = True
     mysql = connectToMySQL(db)
     query = "Select * FROM ebc_db.users"
@@ -132,6 +143,8 @@ def addUserToCourt():
 
     return redirect("/")
 
+#this is an admin function to add users to database. Meant for front desk person to check in people with a name and pin.
+#checks to see if name is unique. pin can be any number
 @app.route("/addUser", methods=["POST"])
 def addUser():
     isValid = True
