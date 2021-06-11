@@ -19,6 +19,7 @@ To Do That I can remember:
 5. create function that allows admin to reserve court time
 6. add court html to admin page and add button next to each name that removes it
 7. create admin login check to get to admin page
+8. add flash messages to html
 '''
 """
 information about table: Table is called users and has 4 values. 
