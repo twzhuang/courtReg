@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset='utf-8'>
+    <title>EBC Admin Page</title>
+</head>
+<body>
+    <form action="/addUser" method="post">
+        <h2>Add User to System</h2>
+        <!--Add error messages for name and pin-->
+        <label for="addName">Name:</label>
+        <input type="text" id="addName" name="addName"><br>
+        <label for="userPin">Enter Pin:</label>
+        <input type="number" id="userPin" name="userPin"><br>
+        <input type="submit">
+    </form>
+</body>

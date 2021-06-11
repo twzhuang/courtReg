@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset='utf-8'>
+    <title>EBC Court Sign Up</title>
+</head>
+<body>
+    <table>
+        <tr><h1>Court 1</h1></tr>
+        <tr>
+            <td>On Court</td>
+            <td>Time Start: </td>
+            <td>Time Remaining: </td>
+        </tr>
+        <tr><th>Name</th></tr>
+        {% for person in courts['court1']%}
+            {% if loop.index==5 %}
+                    <tr><td>Up Next</td></tr>  
+                {% endif %}
+        
+            <tr><td>{{person}}</td></tr>
+        {% endfor %}
+    </table>
+    <form action="/addUserToCourt" method="post">
+        <h2>Sign up for a court</h2>
+        <label for="personNameAdd">Name:</label>
+        <select id="personNameAdd" name="personNameAdd" required>
+            {% for user in namesOfUsers%}
+                <option value="{{user}}">{{user}}</option>
+            {% endfor %}
+        </select><br>
+        <label for="courtNum">Enter Court Number from 1-8:</label>
+        <select id="courtNum" name="courtNum">
+            <option value="court1">1</option>
+            <option value="court2">2</option>
+            <option value="court3">3</option>
+            <option value="court4">4</option>
+            <option value="court5">5</option>
+            <option value="court6">6</option>
+            <option value="court7">7</option>
+            <option value="court8">8</option>
+          </select><br>
+        <label for="userPinAdd">Enter Pin:</label>
+        <input type="password" id="userPinAdd" name="userPinAdd" required>
+        <input type="submit">
+    </form>
+    <form action="/removeUserFromCourt" method="post">
+        <h2>Remove yourself from a court</h2>
+        <label for="personNameRemove">Name:</label>
+        <select id="personNameRemove" name="personNameRemove" required>
+            {% for person in onCourtUsers%}
+                <option value="{{person}}">{{person}}</option>
+            {% endfor %}
+        </select><br>
+        <label for="userPinRemove">Password:</label>
+        <input type="password" id="userPinRemove" name="userPinRemove">
+        <input type="submit">
+    </form>
+    <!--Not sure if the two forms need unique id for names and passwords-->
+</body>
+</html>
