@@ -9,6 +9,18 @@ app = Flask(__name__)
 app.secret_key = "I am a secret key"
 
 db = "ebc_db"
+"""
+information about table: Table is called users and has 4 values. 
+first value is an ID (int) for future possible use, 
+second value is name(varchar45), 
+third value is pin(int), 
+fourth value is a"boolean" type (TinyInt) name of column is "onCourt" 
+This value is 0 by default and 0 means user is not on a court 
+and 1 is when they are on a court. 
+Thinking about just changing this value to an int that 
+says what court they are currently on but am too lazy currently
+"""
+#Dictionary to store all courts and each court is a list of names
 courts = {
     "court1" : [],
     "court2" : [],
@@ -20,6 +32,7 @@ courts = {
     "court8" : [],
 }
 
+#This chunk resets all players to not on a court when program starts
 mysql = connectToMySQL(db)
 query = "update ebc_db.users set onCourt=0"
 mysql.query_db(query)
@@ -27,8 +40,8 @@ mysql.query_db(query)
 print(courts)
 @app.route("/")
 def main():
-    namesOfUsers = [] 
-    usersToRemove = []
+    namesOfUsers = [] #list of users not on a court
+    usersToRemove = [] # list of users on a court
     mysql = connectToMySQL(db)#this is to create list of people not on a court
     query = "Select * FROM ebc_db.users where onCourt = 0;"
     users =  mysql.query_db(query)
@@ -42,9 +55,6 @@ def main():
         namesOfUsers.append(user['name'])
     for person in usersOnCourt:#makes list of people that can removed
         usersToRemove.append(person['name'])
-    print("***********************")
-    print(namesOfUsers)
-    print(usersToRemove)
     return render_template('index.html', onCourtUsers = usersToRemove, namesOfUsers = namesOfUsers, courts=courts)
 
 @app.route("/admin")
@@ -57,11 +67,14 @@ def admin():
 
 @app.route("/removeUserFromCourt", methods=["POST"])
 def removeUserFromCourt():
+    #checks to see if pin entered matches pin in database
+    #if pin matches it goes through courts dictionary and removes name from list and sets onCourt value to 0
     pinEntered = int(request.form['userPinRemove'])
     nameSelected = request.form['personNameRemove']
     mysql = connectToMySQL(db)
     query = "Select * FROM ebc_db.users where name = " + "'" + nameSelected + "'"+ ";"
     user =  mysql.query_db(query)
+    isValid = True
 
     if pinEntered < 1:
         flash("This field is required", "userPinAdd")
@@ -69,6 +82,8 @@ def removeUserFromCourt():
     elif pinEntered!=user[0]['pin']:
         flash("Incorrect Pin")
         isValid = False
+    if isValid == False:
+        return redirect("/")
     else:
         for court in courts:
             for person in courts[court]:
@@ -82,6 +97,7 @@ def removeUserFromCourt():
 
 @app.route("/addUserToCourt", methods=["POST"])
 def addUserToCourt():
+
     isValid = True
     mysql = connectToMySQL(db)
     query = "Select * FROM ebc_db.users"
