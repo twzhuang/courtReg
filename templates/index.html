@@ -9,18 +9,20 @@
     <table>
         {% for i in range(1, courts_test|length + 1) %}
             <tr><h1>Court {{i}}</h1></tr>
-            <tr>
+             <tr>
                 <td>On Court</td>
-                <td>Time Start: </td>
+                <td>Time Start: {{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</td>
                 <td>Time Remaining: </td>
             </tr>
             <tr><th>Name</th></tr>
-            {% for person in courts[ 'court' ~ i ] %}
-                {% if loop.index==5 %}
-                        <tr><td>Up Next</td></tr>
-                    {% endif %}
-
-                <tr><td>{{person}}</td></tr>
+            {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
+                {% if current_next == 'next' %}
+                    <tr><td>Up Next: </td></tr>
+                    <tr><th>Name</th></tr>
+                {% endif %}
+                {% for player in court_info['players'] %}
+                    <tr><td>{{ player }}</td></tr>
+                {% endfor %}
             {% endfor %}
         {% endfor %}
     </table>

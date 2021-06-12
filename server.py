@@ -79,6 +79,7 @@ def main():
 
     for person in users_on_court:  # makes list of people that can removed
         users_to_remove.append(person['first_name'])
+    # print("========== COURTS: ========== {}".format(courts_test), file=sys.stderr)
     return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts=courts, courts_test=courts_test)
 
 
@@ -149,7 +150,7 @@ def add_user_to_court():
     name_selected = request.form['personNameAdd']
     court_entered = request.form['courtNum']
     current_or_next = request.form['current_or_next']
-    selected_court_info = courts_test[court_entered][current_or_next]
+    selected_court_info = courts_test[court_entered]
     mysql = connectToMySQL(db)
     query = "SELECT * FROM ebc_db.users where first_name = " + "'" + name_selected + "'" + ";"
     user = mysql.query_db(query)
@@ -163,7 +164,8 @@ def add_user_to_court():
     else:
         # Check if court is currently empty
         # If yes, then user should not be able to select 'next on'
-        if (not selected_court_info['players']) and current_or_next == 'next':
+        if (not selected_court_info['current']['players']) and current_or_next == 'next':
+            print('Selected court info: {}'.format(selected_court_info), file=sys.stderr)
             print("Cannot add to 'next on' court if court is currently empty", file=sys.stderr)
             flash("Court is currently empty. Please add to current court")
             is_valid = False
@@ -175,11 +177,11 @@ def add_user_to_court():
                 is_valid = False
             else:
                 # if court is empty and court selection is current, add a start time
-                if current_or_next == 'current' and not selected_court_info['players']:
-                    selected_court_info['start_time'] = datetime.now().strftime("%H:%M:%S")
+                if current_or_next == 'current' and not selected_court_info['current']['players']:
+                    selected_court_info['current']['start_time'] = datetime.now().strftime("%H:%M:%S")
                     print("SELECTED COURT INFO: {}".format(selected_court_info), file=sys.stderr)
                 # Add player to court
-                selected_court_info['players'].append(name_selected)
+                selected_court_info[current_or_next]['players'].append(name_selected)
 
                 mysql = connectToMySQL(db)
                 query = "update ebc_db.users set onCourt=1 where first_name = " + "'" + name_selected + "'" + ";"
