@@ -3,29 +3,56 @@
 <head>
     <meta charset='utf-8'>
     <title>EBC Court Sign Up</title>
+    <style>
+        .tablewidth {
+            width: 25%;
+        }
+
+        .tableheight{
+            height: 300px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
+    <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
+        <h2 class="">ELite Badminton Center</h2>
+        <div class="d-inline">
+            <a href="/loginpage">Admin Login</a>
+        </div>
+    </nav>
     <header>Current Time: <span id="clock"></span></header>
-    <table>
+    <div class="container-fluid row">
         {% for i in range(1, courts_test|length + 1) %}
-            <tr><h1>Court {{i}}</h1></tr>
-             <tr>
-                <td>On Court</td>
-                 <td>Time Start: <span class="start_time" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></td>
-                <td>Time Remaining: <span id="time_remaining_{{i}}"></span></td>
+        <table class="tablewidth tableheight">
+            {%if i==5 %}
+            <div class="w-100"></div>
+            {% endif %}  
+            <tr>
+                <th>Court {{i}}</th>
+                <th>Time Start: <span class="start_time" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></th>
+                <th>Time Remaining: <span id="time_remaining_{{i}}"></span></th>
             </tr>
-            <tr><th>Name</th></tr>
-            {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
+            <tr>
+                
+            </tr>
+            <tbody>
+                <tr><th>On Court:</th></tr>
+                {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
                 {% if current_next == 'next' %}
-                    <tr><td>Up Next: </td></tr>
-                    <tr><th>Name</th></tr>
+                    <tr><th>Up Next: </th></tr>
+                    
                 {% endif %}
                 {% for player in court_info['players'] %}
                     <tr><td>{{ player }}</td></tr>
                 {% endfor %}
             {% endfor %}
-        {% endfor %}
-    </table>
+            </tbody>
+
+        </table>
+    {% endfor %}
+    </div>
+
 
     <div style="display:flex; justify-content:space-around">
         <form action="/addUserToCourt" method="post" style="display:inline-block">
