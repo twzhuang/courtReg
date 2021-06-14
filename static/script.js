@@ -28,13 +28,14 @@
 
 //              Create a new Date object for end_time and add appropriate minutes
                 end_time = new Date(d.getTime());
-                end_time.setMinutes(end_time.getMinutes() + 30);
+                end_time.setMinutes(end_time.getMinutes() + 1);
 
                 var x = setInterval(function(end_time, i) {
-                    console.log("i: " + i);
                     var now = new Date().getTime();
+                    console.log(end_time);
 
                     var diff = end_time.getTime() - now;
+
 
                     // Time calculations for days, hours, minutes and seconds
 //                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -45,7 +46,8 @@
 
                     document.getElementById("time_remaining_" + (i+1)).innerHTML = minutes + ":" + seconds
 
-                    if (diff < 0) {
+                    if ((diff - 1000) < 0) {
+                        console.log("TIMER STOPPED");
                         clearInterval(x);
 //                      Include code here to let server.py know that we can move the next on players to the current
 //                      Will probably need AJAX
