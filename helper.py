@@ -22,13 +22,13 @@ def generate_court():
     """
     court_info = {
         "current": {
-            "start_time": None,
-            "end_time": None,
+            "start_time": "",
+            "end_time": "",
             "players": []
         },
         "next": {
-            "start_time": None,
-            "end_time": None,
+            "start_time": "",
+            "end_time": "",
             "players": []
         }
     }

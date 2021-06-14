@@ -11,8 +11,8 @@
             <tr><h1>Court {{i}}</h1></tr>
              <tr>
                 <td>On Court</td>
-                <td>Time Start: {{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</td>
-                <td>Time Remaining: </td>
+                 <td>Time Start: <span class="start_time" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></td>
+                <td>Time Remaining: <span id="time_remaining_{{i}}"></span></td>
             </tr>
             <tr><th>Name</th></tr>
             {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
