@@ -86,11 +86,59 @@ def main():
 @app.route("/admin")
 def admin():
     # add admin login check
-    return render_template('admin.html')
+    if not 'loggedin' in session:
+        session['loggedin'] = False
+        return redirect('/loginpage')
+    else:
+        names_of_users = []  # list of users not on a court
+        users_to_remove = []  # list of users on a court
 
+        mysql = connectToMySQL(db)  # this is to create list of people not on a court
+        query = "Select * FROM ebc_db.users where onCourt = 0;"
+        users = mysql.query_db(query)
 
-# @app.route("/adminlogin", methods=["POST"])
-# def adminlogin():
+        mysql = connectToMySQL(db)  # this is to create list of people on a court
+        query = "Select first_name FROM ebc_db.users where onCourt = 1;"
+        users_on_court = mysql.query_db(query)
+        print("========= USERS CURRENTLY ON A COURT FROM INDEX =========== {}".format(users_on_court), file=sys.stderr)
+
+        for user in users:  # makes list of people not on court
+            names_of_users.append(user['first_name'])
+
+        for person in users_on_court:  # makes list of people that can removed
+            users_to_remove.append(person['first_name'])
+        return render_template('admin.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts=courts, courts_test=courts_test)
+
+@app.route("/loginpage")
+def loginpage():
+    return render_template('login.html')
+
+@app.route("/login", methods=["POST"])
+def login():
+    mysql = connectToMySQL(db)
+    query = "SELECT * FROM admins WHERE username = %(username)s;"
+    data = {'username': request.form['username']}
+    existingUser = mysql.query_db(query, data)
+    print(existingUser)
+    if len(existingUser) > 0:
+    #     #check if password entered matches password in database
+        if (existingUser[0]['password']==request.form['password']):
+            print(session)
+            print("password found")
+            session['loggedin'] = True
+            return redirect('/admin')
+        else:
+            print("password incorrect")
+            ##flash("Password incorrect. Please try again.", "pw")
+            return redirect('/loginpage')
+    else:
+        flash("A user associated with this email could not be found. Please try again.","loginemail")
+        return redirect("/loginpage")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/loginpage")
 
 @app.route("/removeUserFromCourt", methods=["POST"])
 def remove_user_from_court():
@@ -132,6 +180,20 @@ def remove_user_from_court():
         #             print('======== COURTS AFTER REMOVING USER ========= {}'.format(courts), file=sys.stderr)
     return redirect("/")
 
+@app.route("/adminRemove", methods=["POST"])
+def adminRemove():
+    name_selected = request.form["player_to_remove"]
+    mysql = connectToMySQL(db)
+    query = "Select * FROM ebc_db.users where first_name = " + "'" + name_selected + "'" + ";"
+    user = mysql.query_db(query)
+    for court_num, court in courts_test.items():
+            for current_or_next, court_info in court.items():
+                if name_selected in court_info['players']:
+                    court_info['players'].remove(name_selected)
+                    mysql = connectToMySQL(db)
+                    query = "update ebc_db.users set onCourt=0 where first_name = " + "'" + name_selected + "'" + ";"
+                    mysql.query_db(query)
+    return redirect("/admin")
 
 @app.route("/addUserToCourt", methods=["POST"])
 def add_user_to_court():
