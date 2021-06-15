@@ -5,57 +5,84 @@
     <title>EBC Court Sign Up</title>
 </head>
 <body>
+    <header>Current Time: <span id="clock"></span></header>
     <table>
-        <tr><h1>Court 1</h1></tr>
-        <tr>
-            <td>On Court</td>
-            <td>Time Start: </td>
-            <td>Time Remaining: </td>
-        </tr>
-        <tr><th>Name</th></tr>
-        {% for person in courts['court1']%}
-            {% if loop.index==5 %}
-                    <tr><td>Up Next</td></tr>  
+        {% for i in range(1, courts_test|length + 1) %}
+            <tr><h1>Court {{i}}</h1></tr>
+             <tr>
+                <td>On Court</td>
+                 <td>Time Start: <span class="start_time" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></td>
+                <td>Time Remaining: <span id="time_remaining_{{i}}"></span></td>
+            </tr>
+            <tr><th>Name</th></tr>
+            {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
+                {% if current_next == 'next' %}
+                    <tr><td>Up Next: </td></tr>
+                    <tr><th>Name</th></tr>
                 {% endif %}
-        
-            <tr><td>{{person}}</td></tr>
+                {% for player in court_info['players'] %}
+                    <tr><td>{{ player }}</td></tr>
+                {% endfor %}
+            {% endfor %}
         {% endfor %}
     </table>
-    <form action="/addUserToCourt" method="post">
-        <h2>Sign up for a court</h2>
-        <label for="personNameAdd">Name:</label>
-        <select id="personNameAdd" name="personNameAdd" required>
-            {% for user in namesOfUsers%}
-                <option value="{{user}}">{{user}}</option>
-            {% endfor %}
-        </select><br>
-        <label for="courtNum">Enter Court Number from 1-8:</label>
-        <select id="courtNum" name="courtNum">
-            <option value="court1">1</option>
-            <option value="court2">2</option>
-            <option value="court3">3</option>
-            <option value="court4">4</option>
-            <option value="court5">5</option>
-            <option value="court6">6</option>
-            <option value="court7">7</option>
-            <option value="court8">8</option>
-          </select><br>
-        <label for="userPinAdd">Enter Pin:</label>
-        <input type="password" id="userPinAdd" name="userPinAdd" required>
-        <input type="submit">
-    </form>
-    <form action="/removeUserFromCourt" method="post">
-        <h2>Remove yourself from a court</h2>
-        <label for="personNameRemove">Name:</label>
-        <select id="personNameRemove" name="personNameRemove" required>
-            {% for person in onCourtUsers%}
-                <option value="{{person}}">{{person}}</option>
-            {% endfor %}
-        </select><br>
-        <label for="userPinRemove">Password:</label>
-        <input type="password" id="userPinRemove" name="userPinRemove">
-        <input type="submit">
-    </form>
+
+    <div style="display:flex; justify-content:space-around">
+        <form action="/addUserToCourt" method="post" style="display:inline-block">
+            <h2>Sign up for a court</h2>
+            <p>
+                <label for="personNameAdd">Name:</label>
+                <select id="personNameAdd" name="personNameAdd" required>
+                    {% for user in names_of_users%}
+                        <option value="{{user}}">{{user}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p>
+                <label for="courtNum">Enter Court Number from 1-8:</label>
+                <select id="courtNum" name="courtNum">
+                    <option value="court1">1</option>
+                    <option value="court2">2</option>
+                    <option value="court3">3</option>
+                    <option value="court4">4</option>
+                    <option value="court5">5</option>
+                    <option value="court6">6</option>
+                    <option value="court7">7</option>
+                    <option value="court8">8</option>
+                </select>
+            </p>
+            <p>
+                <label for="current_or_next">Choose to be on court now or up next: </label>
+                <select id="current_or_next" name="current_or_next">
+                    <option value="current">Current</option>
+                    <option value="next">Next On</option>
+                </select>
+            </p>
+            <p>
+                <label for="userPinAdd">Enter Pin:</label>
+                <input type="password" id="userPinAdd" name="userPinAdd" required>
+            </p>
+            <input type="submit">
+        </form>
+
+        <form action="/removeUserFromCourt" method="post"  style="display:inline-block; vertical-align:top">
+            <h2>Remove yourself from a court</h2>
+            <p>
+                <label for="personNameRemove">Name:</label>
+                <select id="personNameRemove" name="personNameRemove" required>
+                    {% for person in onCourtUsers%}
+                        <option value="{{person}}">{{person}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p>
+                <label for="userPinRemove">Password:</label>
+                <input type="password" id="userPinRemove" name="userPinRemove">
+            </p>
+            <input type="submit">
+        </form>
+    </div>
     <!--Not sure if the two forms need unique id for names and passwords-->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
