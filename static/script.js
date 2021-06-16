@@ -1,5 +1,32 @@
 (function () {
 
+    function sendPostReq(courtNum) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", '/updateCourt', true);
+        //Send the proper header information along with the request
+        xhttp.setRequestHeader("Content-Type", "application/json");
+
+
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4) {
+                if (xhttp.status == 200) {
+                    console.log("POST REQUEST RECEIVED SUCCESSFULLY")
+                    window.location.reload();
+                    // document.getElementById("myDiv").innerHTML = xmlhttp.responseText;
+                }
+                else if (xhttp.status == 400) {
+                   alert('There was an error 400');
+                }
+                else {
+                    alert('something else other than 200 was returned');
+                }
+            }
+        };
+
+        xhttp.send(JSON.stringify({court_number: courtNum}))
+
+    }
+
     var clockElement = document.getElementById( "clock" );
 
     function updateClock ( clock ) {
@@ -32,10 +59,7 @@
 
                 var x = setInterval(function(end_time, i) {
                     var now = new Date().getTime();
-                    console.log(end_time);
-
                     var diff = end_time.getTime() - now;
-
 
                     // Time calculations for days, hours, minutes and seconds
 //                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -49,6 +73,8 @@
                     if ((diff - 1000) < 0) {
                         console.log("TIMER STOPPED");
                         clearInterval(x);
+
+                        sendPostReq(i+1);
 //                      Include code here to let server.py know that we can move the next on players to the current
 //                      Will probably need AJAX
                     }

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, request, session, flash
 from mysqlconnection import connectToMySQL
-from helper import court_is_full, generate_court
+from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time,)
 import sys
 # from flask_bcrypt import Bcrypt
 import re
@@ -109,9 +109,11 @@ def admin():
             users_to_remove.append(person['first_name'])
         return render_template('admin.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts=courts, courts_test=courts_test)
 
+
 @app.route("/loginpage")
-def loginpage():
+def login_page():
     return render_template('login.html')
+
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -121,7 +123,7 @@ def login():
     existingUser = mysql.query_db(query, data)
     print(existingUser)
     if len(existingUser) > 0:
-    #     #check if password entered matches password in database
+         # check if password entered matches password in database
         if (existingUser[0]['password']==request.form['password']):
             print(session)
             print("password found")
@@ -129,16 +131,18 @@ def login():
             return redirect('/admin')
         else:
             print("password incorrect")
-            ##flash("Password incorrect. Please try again.", "pw")
+            # flash("Password incorrect. Please try again.", "pw")
             return redirect('/loginpage')
     else:
         flash("A user associated with this email could not be found. Please try again.","loginemail")
         return redirect("/loginpage")
 
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/loginpage")
+
 
 @app.route("/removeUserFromCourt", methods=["POST"])
 def remove_user_from_court():
@@ -164,24 +168,17 @@ def remove_user_from_court():
             for current_or_next, court_info in court.items():
                 if name_selected in court_info['players']:
                     court_info['players'].remove(name_selected)
-                    mysql = connectToMySQL(db)
-                    query = "update ebc_db.users set onCourt=0 where first_name = " + "'" + name_selected + "'" + ";"
-                    mysql.query_db(query)
+                    remove_user_from_db(db, name_selected)
+                    # mysql = connectToMySQL(db)
+                    # query = "update ebc_db.users set onCourt=0 where first_name = " + "'" + name_selected + "'" + ";"
+                    # mysql.query_db(query)
                     print('======== COURTS AFTER REMOVING USER ========= {}'.format(courts), file=sys.stderr)
 
-        # for court in courts:
-        #     for person in courts[court]:
-        #         print('PERSON: {}'.format(person), file=sys.stderr)
-        #         if person == name_selected:
-        #             courts[court].remove(person)
-        #             mysql = connectToMySQL(db)
-        #             query = "update ebc_db.users set onCourt=0 where first_name = " + "'" + person + "'" + ";"
-        #             mysql.query_db(query)
-        #             print('======== COURTS AFTER REMOVING USER ========= {}'.format(courts), file=sys.stderr)
     return redirect("/")
 
+
 @app.route("/adminRemove", methods=["POST"])
-def adminRemove():
+def admin_remove():
     name_selected = request.form["player_to_remove"]
     mysql = connectToMySQL(db)
     query = "Select * FROM ebc_db.users where first_name = " + "'" + name_selected + "'" + ";"
@@ -194,6 +191,7 @@ def adminRemove():
                     query = "update ebc_db.users set onCourt=0 where first_name = " + "'" + name_selected + "'" + ";"
                     mysql.query_db(query)
     return redirect("/admin")
+
 
 @app.route("/addUserToCourt", methods=["POST"])
 def add_user_to_court():
@@ -213,6 +211,7 @@ def add_user_to_court():
     court_entered = request.form['courtNum']
     current_or_next = request.form['current_or_next']
     selected_court_info = courts_test[court_entered]
+    current_court = selected_court_info["current"]
     mysql = connectToMySQL(db)
     query = "SELECT * FROM ebc_db.users where first_name = " + "'" + name_selected + "'" + ";"
     user = mysql.query_db(query)
@@ -238,9 +237,15 @@ def add_user_to_court():
                 flash("This court is currently full. Please choose to be next on the court or choose another court.")
                 is_valid = False
             else:
-                # if court is empty and court selection is current, add a start time
-                if current_or_next == 'current' and not selected_court_info['current']['players']:
-                    selected_court_info['current']['start_time'] = datetime.now().strftime("%H:%M:%S")
+                # if court is empty and court selection is current, add a start time and end time
+                if current_or_next == 'current' and not current_court['players']:
+                    current_court['start_time'] = datetime.now().strftime("%H:%M:%S")
+                    # Calculate end time for court depending on number of players
+                    current_court['end_time'] = calculate_end_time(
+                        current_court["players"],
+                        current_court["start_time"]
+                    )
+
                     print("SELECTED COURT INFO: {}".format(selected_court_info), file=sys.stderr)
                 # Add player to court
                 selected_court_info[current_or_next]['players'].append(name_selected)
@@ -304,6 +309,37 @@ def add_user():
         user = mysql2.query_db(query, data)
         print("USER ADDED TO DB: {}".format(user), file=sys.stderr)
         return redirect("/admin")
+
+
+@app.route("/updateCourt", methods=["POST"])
+def update_court():
+    data = request.get_json()
+    court_num = data["court_number"]
+    court_info = courts_test["court" + str(court_num)]
+    print("POST REQUEST JSON: {}".format(data), file=sys.stderr)
+
+    # Remove players from the court in db
+    for player in court_info["current"]["players"]:
+        remove_user_from_db(db, player)
+
+    # for player in court_info["next"]["players"]:
+
+
+    # Move "next on" players to "currently on"
+    court_info["current"] = court_info["next"]
+    court_info["next"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": []
+    }
+
+    # Set start time for new players on court
+    if court_info["current"]["players"]:
+        court_info["current"]["start_time"] = datetime.now().strftime("%H:%M:%S")
+
+    # Receive request from js file when court timer is up to update court
+    # Move "next on" players onto "current" court
+    return redirect("/")
 
 
 # @app.route("/userRegister", methods=["POST"])
