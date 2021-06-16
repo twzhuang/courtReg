@@ -1,4 +1,6 @@
 import sys
+from mysqlconnection import connectToMySQL
+from datetime import timedelta
 from flask import flash
 
 
@@ -33,3 +35,23 @@ def generate_court():
         }
     }
     return court_info
+
+
+def remove_user_from_db(db, name):
+    mysql = connectToMySQL(db)
+    query = "UPDATE ebc_db.users SET onCourt=0 WHERE first_name = '{}';".format(name)
+    mysql.query_db(query)
+
+
+def calculate_end_time(num_players, start_time, one_player_time, two_player_time, three_player_time, four_player_time):
+    """Calculate the end time for the court depending on the number of players on court"""
+    end_time = None
+    if num_players == 1:
+        end_time = start_time + timedelta(minutes=one_player_time)
+    elif num_players == 2:
+        end_time = start_time + timedelta(minutes=two_player_time)
+    elif num_players == 3:
+        end_time = start_time + timedelta(minutes=three_player_time)
+    elif num_players == 4:
+        end_time = start_time + timedelta(minutes=four_player_time)
+    return end_time.strftime("%H:%M:%S")
