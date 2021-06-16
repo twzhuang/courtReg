@@ -13,12 +13,20 @@
             height: 300px;
         }
     </style>
+    <script>
+        function myFunction() {
+          var txt;
+          var r = confirm("Are you sure?");
+          document.getElementById("demo").innerHTML = txt;
+        }
+        </script>
 </head>
 </head>
 <body>
     <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
-        <h2 class="">ELite Badminton Center</h2>
+        <h2 class="">Elite Badminton Center</h2>
         <div class="d-inline">
+            <a href="/" class="p-3">Court Sign Up Page</a>
             <a href="/logout">Log out</a>
         </div>
     </nav>
@@ -71,6 +79,10 @@
         <label for="userPin">Enter Pin:</label>
         <input type="number" id="userPin" name="userPin"><br>
         <input type="submit">
+    </form>
+
+    <form action="/clearUserTable">
+        <input type="submit" onclick="myFunction()" class="text-danger" value="Reset System">
     </form>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>

@@ -59,7 +59,6 @@ mysql.query_db(query)
 
 print('======== COURTS ON STARTUP ========= {}'.format(courts), file=sys.stderr)
 
-
 @app.route("/")
 def main():
     names_of_users = []  # list of users not on a court
@@ -82,9 +81,22 @@ def main():
     # print("========== COURTS: ========== {}".format(courts_test), file=sys.stderr)
     return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts=courts, courts_test=courts_test)
 
+@app.route("/clearUserTable")
+def clearUserTable():
+    if not 'loggedin' in session:
+        session['loggedin'] = False
+        return redirect('/loginpage')
+    mysql = connectToMySQL(db)
+    query = "DELETE FROM users"
+    mysql.query_db(query)
+    global courts_test
+    courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
+    return redirect("/admin")
 
 @app.route("/admin")
 def admin():
+    print("***************************")
+    print(courts_test, file=sys.stderr)
     # add admin login check
     if not 'loggedin' in session:
         session['loggedin'] = False
