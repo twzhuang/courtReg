@@ -30,8 +30,9 @@
             {% endif %}  
             <tr>
                 <th>Court {{i}}</th>
+                <span hidden class="end_time" id="end_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}</span>
                 <th>Time Start: <span class="start_time" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></th>
-                <th>Time Remaining: <span id="time_remaining_{{i}}"></span></th>
+                <th>Time Remaining: <span id="time_remaining_{{i}}" value="{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}"></span></th>
             </tr>
             <tr>
                 

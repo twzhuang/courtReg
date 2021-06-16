@@ -13,6 +13,11 @@ app.secret_key = "I am a secret key"
 
 db = "ebc_db"
 
+ONE_PLAYER_TIME = 1
+TWO_PLAYER_TIME = 15
+THREE_PLAYER_TIME = 20
+FOUR_PLAYER_TIME = 25
+
 '''
 To Do That I can remember:
 1. Need to add timer/clock
@@ -123,8 +128,8 @@ def login():
     existingUser = mysql.query_db(query, data)
     print(existingUser)
     if len(existingUser) > 0:
-         # check if password entered matches password in database
-        if (existingUser[0]['password']==request.form['password']):
+        # check if password entered matches password in database
+        if existingUser[0]['password']==request.form['password']:
             print(session)
             print("password found")
             session['loggedin'] = True
@@ -239,11 +244,16 @@ def add_user_to_court():
             else:
                 # if court is empty and court selection is current, add a start time and end time
                 if current_or_next == 'current' and not current_court['players']:
-                    current_court['start_time'] = datetime.now().strftime("%H:%M:%S")
+                    start_time = datetime.now()
+                    current_court['start_time'] = start_time.strftime("%H:%M:%S")
                     # Calculate end time for court depending on number of players
                     current_court['end_time'] = calculate_end_time(
-                        current_court["players"],
-                        current_court["start_time"]
+                        len(current_court["players"]) + 1,
+                        start_time,
+                        ONE_PLAYER_TIME,
+                        TWO_PLAYER_TIME,
+                        THREE_PLAYER_TIME,
+                        FOUR_PLAYER_TIME
                     )
 
                     print("SELECTED COURT INFO: {}".format(selected_court_info), file=sys.stderr)
@@ -313,6 +323,10 @@ def add_user():
 
 @app.route("/updateCourt", methods=["POST"])
 def update_court():
+    """
+    Receive request from js file when court timer is up to update court
+    Move "next on" players onto "current" court
+    """
     data = request.get_json()
     court_num = data["court_number"]
     court_info = courts_test["court" + str(court_num)]
@@ -322,9 +336,6 @@ def update_court():
     for player in court_info["current"]["players"]:
         remove_user_from_db(db, player)
 
-    # for player in court_info["next"]["players"]:
-
-
     # Move "next on" players to "currently on"
     court_info["current"] = court_info["next"]
     court_info["next"] = {
@@ -333,12 +344,18 @@ def update_court():
         "players": []
     }
 
-    # Set start time for new players on court
+    # Set start time and end time for new players on court
     if court_info["current"]["players"]:
-        court_info["current"]["start_time"] = datetime.now().strftime("%H:%M:%S")
-
-    # Receive request from js file when court timer is up to update court
-    # Move "next on" players onto "current" court
+        start_time = datetime.now()
+        court_info["current"]["start_time"] = start_time.strftime("%H:%M:%S")
+        court_info["current"]["end_time"] = calculate_end_time(
+            len(court_info["current"]["players"]),
+            start_time,
+            ONE_PLAYER_TIME,
+            TWO_PLAYER_TIME,
+            THREE_PLAYER_TIME,
+            FOUR_PLAYER_TIME
+        )
     return redirect("/")
 
 
