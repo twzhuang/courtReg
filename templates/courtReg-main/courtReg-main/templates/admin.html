@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset='utf-8'>
+    <title>EBC Admin Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .tablewidth {
+            width: 25%;
+        }
+
+        .tableheight{
+            height: 300px;
+        }
+    </style>
+    <script>
+        function myFunction() {
+          var txt;
+          var r = confirm("Are you sure?");
+          document.getElementById("demo").innerHTML = txt;
+        }
+        </script>
+</head>
+</head>
+<body style="height: 100vh;">
+    <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
+        <h2 class="">Elite Badminton Center</h2>
+        <div class="d-inline">
+            <a href="/" class="p-3">Court Sign Up Page</a>
+            <a href="/logout">Log out</a>
+        </div>
+    </nav>
+
+    <div class="p-4 h-100">
+        <div class="container-fluid h-100">
+            <div class="row" style="height: 30%">
+                {% for i in range(1, courts_test|length + 1) %}
+                    <div class="col border p-3">
+                        <h3 class="text-center px-2">COURT {{i}}</h3>
+                        <div>
+                            <div class="row">
+                                <span hidden class="end_time" id="end_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}</span>
+                                <p class="col">Time Start: <span class="start_time font-weight-bold" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></p>
+                                <p class="col">Time Remaining: <span class=" font-weight-bold" id="time_remaining_{{i}}" value="{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}"></span></p>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                <p class="font-weight-bold">On Court:</p>
+                                <ul class="pl-3">
+                                {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
+                                    {% if current_next == 'next' %}
+                                            </ul>
+                                        </div>
+                                        <div class="col">
+                                        <p class="font-weight-bold">Up Next:</p>
+                                        <ul class="pl-3">
+                                    {% endif %}
+                                    {% for player in court_info['players'] %}
+                                        <li>
+                                            {{ player }}
+                                            <form action="/adminRemove" method="post">
+                                                <input type=hidden value="{{player}}" name="player_to_remove">
+                                                <input type=submit value="Remove">
+                                            </form>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if i == (courts_test|length)//2 %}
+                        </div>
+                        <div class="row" style="height: 30%">
+                        <!-- <div class="w-100 d-none d-block"></div> -->
+                    {% endif %}
+                {% endfor %}
+                        </div>
+
+        <div class="py-3">
+            <form action="/addUser" method="post">
+                <h2>Add User to System</h2>
+                <!--Add error messages for name and pin-->
+                <label for="addName">Name:</label>
+                <input type="text" id="addName" name="addName"><br>
+                <label for="userPin">Enter Pin:</label>
+                <input type="number" id="userPin" name="userPin"><br>
+                <input type="submit" class="btn btn-primary">
+            </form>
+
+            <form class="py-3" action="/clearUserTable">
+                <input type="submit" onclick="myFunction()" class="btn btn-danger" value="Reset System">
+            </form>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
