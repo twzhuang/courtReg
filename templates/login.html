@@ -6,6 +6,21 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
+    <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
+        <h2 class="">Elite Badminton Center</h2>
+        <div class="d-inline">
+            <a href="/">Court Sign Up Page</a>
+        </div>
+    </nav>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     <div class="right d-inline-block col-5 align-top mx-5">
         <h2>Login</h2>
         <form action="/login" method="post">
