@@ -138,10 +138,10 @@ def login():
             return redirect('/admin')
         else:
             print("password incorrect")
-            # flash("Password incorrect. Please try again.", "pw")
+            flash("Password incorrect. Please try again.", "pw")
             return redirect('/loginpage')
     else:
-        flash("A user associated with this email could not be found. Please try again.","loginemail")
+        flash("Username not found. Please try again.","loginemail")
         return redirect("/loginpage")
 
 
@@ -222,7 +222,7 @@ def add_user_to_court():
     print("USER {}".format(user), file=sys.stderr)
 
     if pin_entered < 1:
-        flash("This field is required", "userPinAdd")
+        flash("Pin is required", "userPinAdd")
         is_valid = False
     elif pin_entered != user[0]['pin']:
         flash("Incorrect Pin")
@@ -280,7 +280,7 @@ def add_user():
     is_valid = True
     # name not entered
     if len(request.form['addName']) < 1:
-        flash("This field is required", "addName")
+        flash("Name is required", "addName")
         is_valid = False
     # name format doesn't match
     elif not (request.form['addName'].isalpha()) or len(request.form['addName']) < 2:
@@ -289,7 +289,7 @@ def add_user():
 
     # pin not entered
     if len(request.form['userPin']) < 1:
-        flash("This field is required", "userPin")
+        flash("Pin is required", "userPin")
         is_valid = False
     # pin format doesn't match
     elif not (request.form['userPin'].isnumeric()):
