@@ -188,6 +188,7 @@ def remove_user_from_court():
                         # if empty, reset court and move next on players
                         else:
                             move_players_on_current_court(courts_test[court_num])
+
     return redirect("/")
 
 
