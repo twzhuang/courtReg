@@ -55,3 +55,4 @@ def calculate_end_time(num_players, start_time, one_player_time, two_player_time
     elif num_players == 4:
         end_time = start_time + timedelta(minutes=four_player_time)
     return end_time.strftime("%H:%M:%S")
+
