@@ -21,6 +21,15 @@
             <a href="/admin">Admin</a>
         </div>
     </nav>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+            <li class=text-danger>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
     <div class="p-4 h-100">
         <header>
             <p>Current Time: <span id="clock"></span></p>
