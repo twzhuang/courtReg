@@ -187,9 +187,18 @@ def admin_remove():
         for current_or_next, court_info in court.items():
             if name_selected in court_info['players']:
                 court_info['players'].remove(name_selected)
-                mysql = connectToMySQL(db)
-                query = "update ebc_db.users set onCourt=0 where first_name = " + "'" + name_selected + "'" + ";"
-                mysql.query_db(query)
+                remove_user_from_db(db, name_selected)
+
+                if current_or_next == "current":
+                    # if not empty update end time
+                    if court_info["players"]:
+                        court_info['end_time'] = calculate_end_time(
+                            len(court_info['players']),
+                            datetime.strptime(court_info['start_time'], "%I:%M %p"),
+                        )
+                    # if empty, reset court and move next on players
+                    else:
+                        move_players_on_current_court(courts_test[court_num])
     return redirect("/admin")
 
 @app.route("/updateUser", methods=["POST"])
