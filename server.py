@@ -2,21 +2,21 @@ from flask import Flask, render_template, redirect, request, session, flash
 from mysqlconnection import connectToMySQL
 from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time,)
 import sys
-# from flask_bcrypt import Bcrypt
-import re
 from datetime import datetime
+import logging
 
 app = Flask(__name__)
-# bcrypt = Bcrypt(app)
+
 
 app.secret_key = "I am a secret key"
 
 db = "ebc_db"
 
-ONE_PLAYER_TIME = 1
+ONE_PLAYER_TIME = 10
 TWO_PLAYER_TIME = 15
 THREE_PLAYER_TIME = 20
 FOUR_PLAYER_TIME = 25
+
 
 '''
 To Do That I can remember:
@@ -42,30 +42,19 @@ says what court they are currently on but am too lazy currently
 """
 
 num_courts = 8
-courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
-# print("========== DYNAMICALLY GENERATE COURTS: ========= {}".format(courts_test), file=sys.stderr)
-
 # Dictionary to store all courts and each court is a list of names
-courts = {
-    "court1": [],
-    "court2": [],
-    "court3": [],
-    "court4": [],
-    "court5": [],
-    "court6": [],
-    "court7": [],
-    "court8": [],
-}
+courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
+
 
 # This chunk resets all players to not on a court when program starts.
 mysql = connectToMySQL(db)
 query = "update ebc_db.users set onCourt=0"
 mysql.query_db(query)
 
-print('======== COURTS ON STARTUP ========= {}'.format(courts), file=sys.stderr)
 
 @app.route("/")
 def main():
+    print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
     names_of_users = []  # list of users not on a court
     users_to_remove = []  # list of users on a court
 
@@ -76,18 +65,17 @@ def main():
     mysql = connectToMySQL(db)  # this is to create list of people on a court
     query = "Select first_name FROM ebc_db.users where onCourt = 1;"
     users_on_court = mysql.query_db(query)
-    print("========= USERS CURRENTLY ON A COURT FROM INDEX =========== {}".format(users_on_court), file=sys.stderr)
 
     for user in users:  # makes list of people not on court
         names_of_users.append(user['first_name'])
 
     for person in users_on_court:  # makes list of people that can removed
         users_to_remove.append(person['first_name'])
-    # print("========== COURTS: ========== {}".format(courts_test), file=sys.stderr)
-    return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts=courts, courts_test=courts_test)
+    return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
+
 
 @app.route("/clearUserTable")
-def clearUserTable():
+def clear_user_table():
     if not 'loggedin' in session:
         session['loggedin'] = False
         return redirect('/loginpage')
@@ -98,12 +86,13 @@ def clearUserTable():
     courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
     return redirect("/admin")
 
+
 @app.route("/admin")
 def admin():
-    print("***************************")
-    print(courts_test, file=sys.stderr)
+    print("====================== SESSION ====================: {}".format(session), file=sys.stderr)
     # add admin login check
     if not 'loggedin' in session:
+        print("================INSIDE IF STATEMENT=============", file=sys.stderr)
         session['loggedin'] = False
         return redirect('/loginpage')
     else:
@@ -117,14 +106,13 @@ def admin():
         mysql = connectToMySQL(db)  # this is to create list of people on a court
         query = "Select first_name FROM ebc_db.users where onCourt = 1;"
         users_on_court = mysql.query_db(query)
-        print("========= USERS CURRENTLY ON A COURT FROM INDEX =========== {}".format(users_on_court), file=sys.stderr)
 
         for user in users:  # makes list of people not on court
             names_of_users.append(user['first_name'])
 
         for person in users_on_court:  # makes list of people that can removed
             users_to_remove.append(person['first_name'])
-        return render_template('admin.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts=courts, courts_test=courts_test)
+        return render_template('admin.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
 
 
 @app.route("/loginpage")
@@ -137,11 +125,11 @@ def login():
     mysql = connectToMySQL(db)
     query = "SELECT * FROM admins WHERE username = %(username)s;"
     data = {'username': request.form['username']}
-    existingUser = mysql.query_db(query, data)
-    print(existingUser)
-    if len(existingUser) > 0:
+    existing_user = mysql.query_db(query, data)
+
+    if len(existing_user) > 0:
         # check if password entered matches password in database
-        if existingUser[0]['password']==request.form['password']:
+        if existing_user[0]['password'] == request.form['password']:
             print(session)
             print("password found")
             session['loggedin'] = True
@@ -186,10 +174,6 @@ def remove_user_from_court():
                 if name_selected in court_info['players']:
                     court_info['players'].remove(name_selected)
                     remove_user_from_db(db, name_selected)
-                    # mysql = connectToMySQL(db)
-                    # query = "update ebc_db.users set onCourt=0 where first_name = " + "'" + name_selected + "'" + ";"
-                    # mysql.query_db(query)
-                    print('======== COURTS AFTER REMOVING USER ========= {}'.format(courts), file=sys.stderr)
 
     return redirect("/")
 
@@ -229,9 +213,11 @@ def add_user_to_court():
     current_or_next = request.form['current_or_next']
     selected_court_info = courts_test[court_entered]
     current_court = selected_court_info["current"]
+
     mysql = connectToMySQL(db)
     query = "SELECT * FROM ebc_db.users where first_name = " + "'" + name_selected + "'" + ";"
     user = mysql.query_db(query)
+    print("USER {}".format(user), file=sys.stderr)
 
     if pin_entered < 1:
         flash("This field is required", "userPinAdd")
@@ -254,10 +240,12 @@ def add_user_to_court():
                 flash("This court is currently full. Please choose to be next on the court or choose another court.")
                 is_valid = False
             else:
+                start_time = datetime.now()
                 # if court is empty and court selection is current, add a start time and end time
-                if current_or_next == 'current' and not current_court['players']:
-                    start_time = datetime.now()
-                    current_court['start_time'] = start_time.strftime("%H:%M:%S")
+                if current_or_next == 'current':
+                    if not current_court['players']:
+                        current_court['start_time'] = start_time.strftime("%I:%M %p").lstrip("0")
+
                     # Calculate end time for court depending on number of players
                     current_court['end_time'] = calculate_end_time(
                         len(current_court["players"]) + 1,
@@ -268,14 +256,12 @@ def add_user_to_court():
                         FOUR_PLAYER_TIME
                     )
 
-                    print("SELECTED COURT INFO: {}".format(selected_court_info), file=sys.stderr)
                 # Add player to court
                 selected_court_info[current_or_next]['players'].append(name_selected)
 
                 mysql = connectToMySQL(db)
                 query = "update ebc_db.users set onCourt=1 where first_name = " + "'" + name_selected + "'" + ";"
                 mysql.query_db(query)
-                print('======== COURTS AFTER ADDING USER ========= {}'.format(courts), file=sys.stderr)
     if not is_valid:
         return redirect("/")
 
@@ -342,7 +328,6 @@ def update_court():
     data = request.get_json()
     court_num = data["court_number"]
     court_info = courts_test["court" + str(court_num)]
-    print("POST REQUEST JSON: {}".format(data), file=sys.stderr)
 
     # Remove players from the court in db
     for player in court_info["current"]["players"]:
@@ -359,7 +344,7 @@ def update_court():
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
         start_time = datetime.now()
-        court_info["current"]["start_time"] = start_time.strftime("%H:%M:%S")
+        court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
         court_info["current"]["end_time"] = calculate_end_time(
             len(court_info["current"]["players"]),
             start_time,
@@ -369,12 +354,6 @@ def update_court():
             FOUR_PLAYER_TIME
         )
     return redirect("/")
-
-
-# @app.route("/userRegister", methods=["POST"])
-# def register():
-#    is_valid = True
-#    iflen(request.form[''])
 
 if __name__ == '__main__':
     app.run(debug=True)

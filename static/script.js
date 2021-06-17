@@ -35,7 +35,6 @@
         updateClock( clockElement );
     }, 1000);
 
-    var start_time_arr = document.getElementsByClassName( "start_time" );
     var end_time_arr = document.getElementsByClassName("end_time");
     var court_timer = document.getElementsByClassName( "timer" );
 

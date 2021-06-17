@@ -22,7 +22,7 @@
         </script>
 </head>
 </head>
-<body>
+<body style="height: 100vh;">
     <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
         <h2 class="">Elite Badminton Center</h2>
         <div class="d-inline">
@@ -31,59 +31,69 @@
         </div>
     </nav>
 
-    <div class="container-fluid row">
-        {% for i in range(1, courts_test|length + 1) %}
-        <table class="tablewidth tableheight">
-            {%if i==5 %}
-            <div class="w-100"></div>
-            {% endif %}  
-            <tr>
-                <th>Court {{i}}</th>
-                <th>Time Start: <span class="start_time" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></th>
-                <th>Time Remaining: <span id="time_remaining_{{i}}"></span></th>
-            </tr>
-            <tr>
-                
-            </tr>
-            <tbody>
-                <tr><th>On Court:</th></tr>
-                {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
-                {% if current_next == 'next' %}
-                    <tr><th>Up Next: </th></tr>
-                    
-                {% endif %}
-                {% for player in court_info['players'] %}
-                    <tr>
-                        <td>{{ player }}</td>
-                        <td>
-                            <form action="/adminRemove" method="post">
-                                <input type=hidden value="{{player}}" name="player_to_remove">
-                                <input type=submit value="Remove">
-                            </form>
-                        </td>
-                    </tr>
+    <div class="p-4 h-100">
+        <div class="container-fluid h-100">
+            <div class="row" style="height: 30%">
+                {% for i in range(1, courts_test|length + 1) %}
+                    <div class="col border p-3">
+                        <h3 class="text-center px-2">COURT {{i}}</h3>
+                        <div>
+                            <div class="row">
+                                <span hidden class="end_time" id="end_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}</span>
+                                <p class="col">Time Start: <span class="start_time font-weight-bold" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></p>
+                                <p class="col">Time Remaining: <span class=" font-weight-bold" id="time_remaining_{{i}}" value="{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}"></span></p>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                <p class="font-weight-bold">On Court:</p>
+                                <ul class="pl-3">
+                                {% for current_next, court_info in courts_test[ 'court' ~ i ].items() %}
+                                    {% if current_next == 'next' %}
+                                            </ul>
+                                        </div>
+                                        <div class="col">
+                                        <p class="font-weight-bold">Up Next:</p>
+                                        <ul class="pl-3">
+                                    {% endif %}
+                                    {% for player in court_info['players'] %}
+                                        <li>
+                                            {{ player }}
+                                            <form action="/adminRemove" method="post">
+                                                <input type=hidden value="{{player}}" name="player_to_remove">
+                                                <input type=submit value="Remove">
+                                            </form>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if i == (courts_test|length)//2 %}
+                        </div>
+                        <div class="row" style="height: 30%">
+                        <!-- <div class="w-100 d-none d-block"></div> -->
+                    {% endif %}
                 {% endfor %}
-            {% endfor %}
-            </tbody>
+                        </div>
 
-        </table>
-    {% endfor %}
+        <div class="py-3">
+            <form action="/addUser" method="post">
+                <h2>Add User to System</h2>
+                <!--Add error messages for name and pin-->
+                <label for="addName">Name:</label>
+                <input type="text" id="addName" name="addName"><br>
+                <label for="userPin">Enter Pin:</label>
+                <input type="number" id="userPin" name="userPin"><br>
+                <input type="submit" class="btn btn-primary">
+            </form>
+
+            <form class="py-3" action="/clearUserTable">
+                <input type="submit" onclick="myFunction()" class="btn btn-danger" value="Reset System">
+            </form>
+        </div>
     </div>
-
-
-    <form action="/addUser" method="post">
-        <h2>Add User to System</h2>
-        <!--Add error messages for name and pin-->
-        <label for="addName">Name:</label>
-        <input type="text" id="addName" name="addName"><br>
-        <label for="userPin">Enter Pin:</label>
-        <input type="number" id="userPin" name="userPin"><br>
-        <input type="submit">
-    </form>
-
-    <form action="/clearUserTable">
-        <input type="submit" onclick="myFunction()" class="text-danger" value="Reset System">
-    </form>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
