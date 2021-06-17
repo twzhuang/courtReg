@@ -16,7 +16,7 @@
     <script>
         function myFunction() {
           var txt;
-          var r = confirm("Are you sure?");
+          var r = confirm("This will clear all users from the court database. Do you wish to continue?");
           document.getElementById("demo").innerHTML = txt;
         }
         </script>
@@ -30,7 +30,15 @@
             <a href="/logout">Log out</a>
         </div>
     </nav>
-
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+            <li class=text-danger>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
     <div class="p-4 h-100">
         <div class="container-fluid h-100">
             <div class="row" style="height: 30%">
@@ -58,9 +66,9 @@
                                     {% for player in court_info['players'] %}
                                         <li>
                                             {{ player }}
-                                            <form action="/adminRemove" method="post">
+                                            <form action="/adminRemove" method="post" class="d-inline">
                                                 <input type=hidden value="{{player}}" name="player_to_remove">
-                                                <input type=submit value="Remove">
+                                                <input type=submit value="Remove" class="small">
                                             </form>
                                         </li>
                                     {% endfor %}
