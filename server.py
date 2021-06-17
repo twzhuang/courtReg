@@ -1,6 +1,12 @@
 from flask import Flask, render_template, redirect, request, session, flash
 from mysqlconnection import connectToMySQL
-from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time,)
+from helper import (
+    court_is_full,
+    generate_court,
+    remove_user_from_db,
+    calculate_end_time,
+    move_players_on_current_court
+)
 import sys
 from datetime import datetime
 import logging
@@ -11,12 +17,6 @@ app = Flask(__name__)
 app.secret_key = "I am a secret key"
 
 db = "ebc_db"
-
-ONE_PLAYER_TIME = 10
-TWO_PLAYER_TIME = 15
-THREE_PLAYER_TIME = 20
-FOUR_PLAYER_TIME = 25
-
 
 '''
 To Do That I can remember:
@@ -54,16 +54,15 @@ mysql.query_db(query)
 
 @app.route("/")
 def main():
-    print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
     names_of_users = []  # list of users not on a court
     users_to_remove = []  # list of users on a court
 
     mysql = connectToMySQL(db)  # this is to create list of people not on a court
-    query = "Select * FROM ebc_db.users where onCourt = 0;"
+    query = "SELECT * FROM ebc_db.users WHERE onCourt = 0 ORDER BY first_name;"
     users = mysql.query_db(query)
 
     mysql = connectToMySQL(db)  # this is to create list of people on a court
-    query = "Select first_name FROM ebc_db.users where onCourt = 1;"
+    query = "SELECT first_name FROM ebc_db.users WHERE onCourt = 1 ORDER BY first_name;"
     users_on_court = mysql.query_db(query)
 
     for user in users:  # makes list of people not on court
@@ -96,22 +95,25 @@ def admin():
         session['loggedin'] = False
         return redirect('/loginpage')
     else:
+
+        # Don't think this code is being used so it's been commented out
+
         names_of_users = []  # list of users not on a court
         users_to_remove = []  # list of users on a court
 
-        mysql = connectToMySQL(db)  # this is to create list of people not on a court
-        query = "Select * FROM ebc_db.users where onCourt = 0;"
-        users = mysql.query_db(query)
+        # mysql = connectToMySQL(db)  # this is to create list of people not on a court
+        # query = "Select * FROM ebc_db.users where onCourt = 0;"
+        # users = mysql.query_db(query)
+        #
+        # mysql = connectToMySQL(db)  # this is to create list of people on a court
+        # query = "Select first_name FROM ebc_db.users where onCourt = 1;"
+        # users_on_court = mysql.query_db(query)
 
-        mysql = connectToMySQL(db)  # this is to create list of people on a court
-        query = "Select first_name FROM ebc_db.users where onCourt = 1;"
-        users_on_court = mysql.query_db(query)
-
-        for user in users:  # makes list of people not on court
-            names_of_users.append(user['first_name'])
-
-        for person in users_on_court:  # makes list of people that can removed
-            users_to_remove.append(person['first_name'])
+        # for user in users:  # makes list of people not on court
+        #     names_of_users.append(user['first_name'])
+        #
+        # for person in users_on_court:  # makes list of people that can removed
+        #     users_to_remove.append(person['first_name'])
         return render_template('admin.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
 
 
@@ -175,6 +177,17 @@ def remove_user_from_court():
                     court_info['players'].remove(name_selected)
                     remove_user_from_db(db, name_selected)
 
+                    # check if court selection is current
+                    if current_or_next == "current":
+                        # if not empty update end time
+                        if court_info["players"]:
+                            court_info['end_time'] = calculate_end_time(
+                                len(court_info['players']),
+                                datetime.strptime(court_info['start_time'], "%I:%M %p")
+                            )
+                        # if empty, reset court and move next on players
+                        else:
+                            move_players_on_current_court(courts_test[court_num])
     return redirect("/")
 
 
@@ -249,11 +262,7 @@ def add_user_to_court():
                     # Calculate end time for court depending on number of players
                     current_court['end_time'] = calculate_end_time(
                         len(current_court["players"]) + 1,
-                        start_time,
-                        ONE_PLAYER_TIME,
-                        TWO_PLAYER_TIME,
-                        THREE_PLAYER_TIME,
-                        FOUR_PLAYER_TIME
+                        start_time
                     )
 
                 # Add player to court
@@ -333,27 +342,26 @@ def update_court():
     for player in court_info["current"]["players"]:
         remove_user_from_db(db, player)
 
-    # Move "next on" players to "currently on"
-    court_info["current"] = court_info["next"]
-    court_info["next"] = {
-        "start_time": "",
-        "end_time": "",
-        "players": []
-    }
+    move_players_on_current_court(court_info)
 
-    # Set start time and end time for new players on court
-    if court_info["current"]["players"]:
-        start_time = datetime.now()
-        court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
-        court_info["current"]["end_time"] = calculate_end_time(
-            len(court_info["current"]["players"]),
-            start_time,
-            ONE_PLAYER_TIME,
-            TWO_PLAYER_TIME,
-            THREE_PLAYER_TIME,
-            FOUR_PLAYER_TIME
-        )
+    # # Move "next on" players to "currently on"
+    # court_info["current"] = court_info["next"]
+    # court_info["next"] = {
+    #     "start_time": "",
+    #     "end_time": "",
+    #     "players": []
+    # }
+    #
+    # # Set start time and end time for new players on court
+    # if court_info["current"]["players"]:
+    #     start_time = datetime.now()
+    #     court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
+    #     court_info["current"]["end_time"] = calculate_end_time(
+    #         len(court_info["current"]["players"]),
+    #         start_time
+    #     )
     return redirect("/")
+
 
 if __name__ == '__main__':
     app.run(debug=True)

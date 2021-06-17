@@ -1,7 +1,12 @@
 import sys
 from mysqlconnection import connectToMySQL
-from datetime import timedelta
+from datetime import timedelta, datetime
 from flask import flash
+
+ONE_PLAYER_TIME = 10
+TWO_PLAYER_TIME = 15
+THREE_PLAYER_TIME = 20
+FOUR_PLAYER_TIME = 25
 
 
 def court_is_full(current_or_next, court_num_info):
@@ -43,15 +48,34 @@ def remove_user_from_db(db, name):
     mysql.query_db(query)
 
 
-def calculate_end_time(num_players, start_time, one_player_time, two_player_time, three_player_time, four_player_time):
+def move_players_on_current_court(court_info):
+    # Move "next on" players to "currently on"
+    court_info["current"] = court_info["next"]
+    court_info["next"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": []
+    }
+
+    # Set start time and end time for new players on court
+    if court_info["current"]["players"]:
+        start_time = datetime.now()
+        court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
+        court_info["current"]["end_time"] = calculate_end_time(
+            len(court_info["current"]["players"]),
+            start_time
+        )
+
+
+def calculate_end_time(num_players, start_time):
     """Calculate the end time for the court depending on the number of players on court"""
     end_time = None
     if num_players == 1:
-        end_time = start_time + timedelta(minutes=one_player_time)
+        end_time = start_time + timedelta(minutes=ONE_PLAYER_TIME)
     elif num_players == 2:
-        end_time = start_time + timedelta(minutes=two_player_time)
+        end_time = start_time + timedelta(minutes=TWO_PLAYER_TIME)
     elif num_players == 3:
-        end_time = start_time + timedelta(minutes=three_player_time)
+        end_time = start_time + timedelta(minutes=THREE_PLAYER_TIME)
     elif num_players == 4:
-        end_time = start_time + timedelta(minutes=four_player_time)
+        end_time = start_time + timedelta(minutes=FOUR_PLAYER_TIME)
     return end_time.strftime("%H:%M:%S")
