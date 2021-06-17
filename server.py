@@ -95,7 +95,8 @@ def admin():
         print("================INSIDE IF STATEMENT=============", file=sys.stderr)
         session['loggedin'] = False
         return redirect('/loginpage')
-    else:
+    
+    elif session['loggedin']==True:
         names_of_users = []  # list of users not on a court
         users_to_remove = []  # list of users on a court
 
@@ -113,7 +114,8 @@ def admin():
         for person in users_on_court:  # makes list of people that can removed
             users_to_remove.append(person['first_name'])
         return render_template('admin.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
-
+    else:
+        return redirect('/loginpage')
 
 @app.route("/loginpage")
 def login_page():
@@ -146,7 +148,7 @@ def login():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("/loginpage")
+    return redirect("/")
 
 
 @app.route("/removeUserFromCourt", methods=["POST"])
