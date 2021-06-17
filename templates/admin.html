@@ -85,22 +85,39 @@
                     {% endif %}
                 {% endfor %}
                         </div>
+        <div class="py-3 row">
+            <div>
+                <form action="/addUser" method="post" style="display:inline-block">
+                    <h2>Add User to System</h2>
+                    <!--Add error messages for name and pin-->
+                    <label for="addName">Name:</label>
+                    <input type="text" id="addName" name="addName"><br>
+                    <label for="userPin">Enter Pin:</label>
+                    <input type="number" id="userPin" name="userPin"><br>
+                    <input type="submit" class="btn btn-primary">
+                </form>
 
-        <div class="py-3">
-            <form action="/addUser" method="post">
-                <h2>Add User to System</h2>
-                <!--Add error messages for name and pin-->
-                <label for="addName">Name:</label>
-                <input type="text" id="addName" name="addName"><br>
-                <label for="userPin">Enter Pin:</label>
-                <input type="number" id="userPin" name="userPin"><br>
-                <input type="submit" class="btn btn-primary">
-            </form>
-
-            <form class="py-3" action="/clearUserTable">
-                <input type="submit" onclick="myFunction()" class="btn btn-danger" value="Reset System">
-            </form>
-        </div>
+                <form class="py-3" action="/clearUserTable">
+                    <input type="submit" onclick="myFunction()" class="btn btn-danger" value="Reset System">
+                </form>
+            </div>
+            <div class="px-5">
+                <form action="/updateUser" method="post">
+                    <h2>Update User or Remove User from System</h2>
+                    <label for="userToUpdate">Name:</label>
+                    <select id="userToUpdate" name="userToUpdate" required>
+                        {% for user in all_users %}
+                            <option value="{{user}}">{{user}}</option>
+                        {% endfor %}
+                    </select><br>
+                    <label for="userPin">Enter New Pin:</label>
+                    <input type="number" id="userPin" name="userPin"><br>
+                    <input type="submit" value="Update" class="btn btn-primary">
+                    <input type="submit" value="Delete" class="btn btn-danger" formaction="/removeUserFromSystem">
+                </form>
+            </div>
+        </div>               
+            
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
