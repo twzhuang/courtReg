@@ -19,7 +19,8 @@
     <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
         <h2 class="">Elite Badminton Center</h2>
         <div class="d-inline">
-            <a href="/" class="p-3">Court Sign Up Page</a>
+            <a href="/" class="">Court Sign Up Page</a>
+            <a href="/checkin" class="p-3">Check In</a>
             <a href="/logout">Log out</a>
         </div>
     </nav>
@@ -80,21 +81,21 @@
                         </div>
         <div class="py-3 row">
             <div>
+                <!--
                 <form action="/addUser" method="post" style="display:inline-block">
                     <h2>Add User to System</h2>
-                    <!--Add error messages for name and pin-->
                     <label for="addName">Name:</label>
                     <input type="text" id="addName" name="addName"><br>
                     <label for="userPin">Enter Pin:</label>
                     <input type="number" id="userPin" name="userPin"><br>
                     <input type="submit" class="btn btn-primary">
                 </form>
+                -->
 
-                <form class="py-3" action="/clearUserTable">
-                    <input type="submit" onclick="myFunction()" class="btn btn-danger" value="Reset System">
-                </form>
+
+
             </div>
-            <div class="px-5">
+            <div class="px-5 row">
                 <form action="/updateUser" method="post">
                     <h2>Update User or Remove User from System</h2>
                     <label for="userToUpdate">Name:</label>
@@ -107,6 +108,11 @@
                     <input type="number" id="userPin" name="userPin"><br>
                     <input type="submit" value="Update" class="btn btn-primary">
                     <input type="submit" value="Delete" class="btn btn-danger" formaction="/removeUserFromSystem">
+                </form>
+
+                <form class="px-5" action="/clearUserTable">
+                    <h2>Reset System. Please do this once a day!</h2>
+                    <input type="submit" onclick="myFunction()" class="btn btn-danger" value="Reset System">
                 </form>
             </div>
         </div>               
