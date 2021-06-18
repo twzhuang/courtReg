@@ -66,7 +66,16 @@ def clear_user_table():
     courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
     return redirect("/admin")
 
-
+@app.route("/checkin")
+def checkinpage():
+    if not 'loggedin' in session:
+        session['loggedin'] = False
+        return redirect('/loginpage')    
+    if session['loggedin']==False:
+        return redirect('/loginpage')
+    else:
+        return render_template('addUser.html')
+    
 @app.route("/admin")
 def admin():
     print("====================== SESSION ====================: {}".format(session), file=sys.stderr)
@@ -341,7 +350,7 @@ def add_user():
             is_valid = False
 
     if not is_valid:
-        return redirect('/admin')
+        return redirect('/checkin')
     else:
         print("CREATING NEW USER", file=sys.stderr)
         mysql2 = connectToMySQL(db)
@@ -352,7 +361,7 @@ def add_user():
         }
         user = mysql2.query_db(query, data)
         print("USER ADDED TO DB: {}".format(user), file=sys.stderr)
-        return redirect("/admin")
+        return redirect("/checkin")
 
 
 @app.route("/updateCourt", methods=["POST"])
