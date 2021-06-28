@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 app.secret_key = "I am a secret key"
 
-db = "ebc_db"
+db = "heroku_98749cee03b76ad"
 
 
 '''
