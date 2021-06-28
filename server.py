@@ -28,7 +28,7 @@ courts_test = {"court{}".format(num): generate_court() for num in range(1, num_c
 
 # This chunk resets all players to not on a court when program starts.
 mysql = connectToMySQL(db)
-query = "update ebc_db.users set onCourt=0"
+query = "update {}.users set onCourt=0".format(db)
 mysql.query_db(query)
 
 
@@ -39,11 +39,11 @@ def main():
     users_to_remove = []  # list of users on a court
 
     mysql = connectToMySQL(db)  # this is to create list of people not on a court
-    query = "Select * FROM ebc_db.users where onCourt = 0 ORDER BY first_name;"
+    query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
     users = mysql.query_db(query)
 
     mysql = connectToMySQL(db)  # this is to create list of people on a court
-    query = "Select first_name FROM ebc_db.users where onCourt = 1 ORDER BY first_name;"
+    query = "Select first_name FROM {}.users where onCourt = 1 ORDER BY first_name;".format(db)
     users_on_court = mysql.query_db(query)
 
     for user in users:  # makes list of people not on court
@@ -90,15 +90,15 @@ def admin():
         all_users = []
 
         mysql = connectToMySQL(db)  # this is to create list of people not on a court
-        query = "Select * FROM ebc_db.users;"
+        query = "Select * FROM {}.users;".format(db)
         all_users_query = mysql.query_db(query)
 
         mysql = connectToMySQL(db)  # this is to create list of people not on a court
-        query = "Select * FROM ebc_db.users where onCourt = 0;"
+        query = "Select * FROM {}.users where onCourt = 0;".format(db)
         users = mysql.query_db(query)
 
         mysql = connectToMySQL(db)  # this is to create list of people on a court
-        query = "Select first_name FROM ebc_db.users where onCourt = 1;"
+        query = "Select first_name FROM {}.users where onCourt = 1;".format(db)
         users_on_court = mysql.query_db(query)
 
         for user in users:  # makes list of people not on court
@@ -122,7 +122,7 @@ def login_page():
 @app.route("/login", methods=["POST"])
 def login():
     mysql = connectToMySQL(db)
-    query = "SELECT * FROM admins WHERE username = %(username)s;"
+    query = "SELECT * FROM admins WHERE username = %(username)s;".format(db)
     data = {'username': request.form['username']}
     existing_user = mysql.query_db(query, data)
 
@@ -155,7 +155,7 @@ def remove_user_from_court():
     pin_entered = int(request.form['userPinRemove'])
     name_selected = request.form['personNameRemove']
     mysql = connectToMySQL(db)
-    query = "Select * FROM ebc_db.users where first_name = " + "'" + name_selected + "'" + ";"
+    query = "Select * FROM {}.users where first_name = " + "'" + name_selected + "'" + ";".format(db)
     user = mysql.query_db(query)
     is_valid = True
 
@@ -253,7 +253,7 @@ def add_user_to_court():
 
     # NOTE: Can this be removed?
     mysql = connectToMySQL(db)
-    query = "SELECT * FROM ebc_db.users"
+    query = "SELECT * FROM {}.users".format(db)
     users = mysql.query_db(query)
 
     pin_entered = int(request.form['userPinAdd'])
@@ -264,7 +264,7 @@ def add_user_to_court():
     current_court = selected_court_info["current"]
 
     mysql = connectToMySQL(db)
-    query = "SELECT * FROM ebc_db.users where first_name = " + "'" + name_selected + "'" + ";"
+    query = "SELECT * FROM {}.users where first_name = " + "'" + name_selected + "'" + ";".format(db)
     user = mysql.query_db(query)
     print("USER {}".format(user), file=sys.stderr)
 
@@ -305,7 +305,7 @@ def add_user_to_court():
                 selected_court_info[current_or_next]['players'].append(name_selected)
 
                 mysql = connectToMySQL(db)
-                query = "update ebc_db.users set onCourt=1 where first_name = " + "'" + name_selected + "'" + ";"
+                query = "update {}.users set onCourt=1 where first_name = " + "'" + name_selected + "'" + ";".format(db)
                 mysql.query_db(query)
     if not is_valid:
         return redirect("/")
