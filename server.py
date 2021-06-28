@@ -155,7 +155,7 @@ def remove_user_from_court():
     pin_entered = int(request.form['userPinRemove'])
     name_selected = request.form['personNameRemove']
     mysql = connectToMySQL(db)
-    query = "Select * FROM {}.users where first_name = " + "'" + name_selected + "'" + ";".format(db)
+    query = "SELECT * FROM {}.users where first_name = '{}';".format(db, name_selected)
     user = mysql.query_db(query)
     is_valid = True
 
@@ -264,7 +264,7 @@ def add_user_to_court():
     current_court = selected_court_info["current"]
 
     mysql = connectToMySQL(db)
-    query = "SELECT * FROM {}.users where first_name = " + "'" + name_selected + "'" + ";".format(db)
+    query = "SELECT * FROM {}.users where first_name = '{}';".format(db, name_selected)
     user = mysql.query_db(query)
     print("USER {}".format(user), file=sys.stderr)
 
@@ -305,7 +305,7 @@ def add_user_to_court():
                 selected_court_info[current_or_next]['players'].append(name_selected)
 
                 mysql = connectToMySQL(db)
-                query = "update {}.users set onCourt=1 where first_name = " + "'" + name_selected + "'" + ";".format(db)
+                query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, name_selected)
                 mysql.query_db(query)
     if not is_valid:
         return redirect("/")
