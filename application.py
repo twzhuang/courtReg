@@ -371,6 +371,7 @@ def update_court():
     Move "next on" players onto "current" court
     """
     data = request.get_json()
+    print(data, file=sys.stderr)
     court_num = data["court_number"]
     court_info = courts_test["court" + str(court_num)]
 
