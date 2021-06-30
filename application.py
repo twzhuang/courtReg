@@ -10,7 +10,7 @@ application = Flask(__name__)
 
 application.secret_key = "I am a secret key"
 
-db = "ebc_schema"
+db = "ebc_db"
 
 
 '''
@@ -289,16 +289,16 @@ def add_user_to_court():
                 flash("This court is currently full. Please choose to be next on the court or choose another court.")
                 is_valid = False
             else:
-                start_time = datetime.now()
                 # if court is empty and court selection is current, add a start time and end time
                 if current_or_next == 'current':
                     if not current_court['players']:
+                        start_time = datetime.now()
                         current_court['start_time'] = start_time.strftime("%I:%M %p").lstrip("0")
 
                     # Calculate end time for court depending on number of players
                     current_court['end_time'] = calculate_end_time(
                         len(current_court["players"]) + 1,
-                        start_time
+                        datetime.strptime(current_court['start_time'], "%I:%M %p")
                     )
 
                 # Add player to court
