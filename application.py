@@ -5,12 +5,12 @@ import sys
 from datetime import datetime
 import logging
 
-app = Flask(__name__)
+application = Flask(__name__)
 
 
-app.secret_key = "I am a secret key"
+application.secret_key = "I am a secret key"
 
-db = "heroku_98749cee03b76ad"
+db = "ebc_schema"
 
 
 '''
@@ -32,7 +32,7 @@ query = "update {}.users set onCourt=0".format(db)
 mysql.query_db(query)
 
 
-@app.route("/")
+@application.route("/")
 def main():
     print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
     names_of_users = []  # list of users not on a court
@@ -54,7 +54,7 @@ def main():
     return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
 
 
-@app.route("/clearUserTable")
+@application.route("/clearUserTable")
 def clear_user_table():
     if not 'loggedin' in session:
         session['loggedin'] = False
@@ -66,7 +66,7 @@ def clear_user_table():
     courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
     return redirect("/admin")
 
-@app.route("/checkin")
+@application.route("/checkin")
 def checkinpage():
     if not 'loggedin' in session:
         session['loggedin'] = False
@@ -76,7 +76,7 @@ def checkinpage():
     else:
         return render_template('addUser.html')
     
-@app.route("/admin")
+@application.route("/admin")
 def admin():
     print("====================== SESSION ====================: {}".format(session), file=sys.stderr)
     # add admin login check
@@ -114,12 +114,12 @@ def admin():
     else:
         return redirect('/loginpage')
 
-@app.route("/loginpage")
+@application.route("/loginpage")
 def login_page():
     return render_template('login.html')
 
 
-@app.route("/login", methods=["POST"])
+@application.route("/login", methods=["POST"])
 def login():
     mysql = connectToMySQL(db)
     query = "SELECT * FROM admins WHERE username = %(username)s;".format(db)
@@ -142,13 +142,13 @@ def login():
         return redirect("/loginpage")
 
 
-@app.route("/logout")
+@application.route("/logout")
 def logout():
     session.clear()
     return redirect("/loginpage")
 
 
-@app.route("/removeUserFromCourt", methods=["POST"])
+@application.route("/removeUserFromCourt", methods=["POST"])
 def remove_user_from_court():
     # checks to see if pin entered matches pin in database
     # if pin matches it goes through courts dictionary and removes name from list and sets onCourt value to 0
@@ -189,7 +189,7 @@ def remove_user_from_court():
     return redirect("/")
 
 
-@app.route("/adminRemove", methods=["POST"])
+@application.route("/adminRemove", methods=["POST"])
 def admin_remove():
     name_selected = request.form["player_to_remove"]
     for court_num, court in courts_test.items():
@@ -210,7 +210,7 @@ def admin_remove():
                         move_players_on_current_court(courts_test[court_num])
     return redirect("/admin")
 
-@app.route("/updateUser", methods=["POST"])
+@application.route("/updateUser", methods=["POST"])
 def update_user():
     user_selected = request.form['userToUpdate']
     newPin = request.form['userPin']
@@ -231,7 +231,7 @@ def update_user():
     mysql.query_db(query)
     return redirect('/admin')
 
-@app.route("/removeUserFromSystem", methods=["POST"])
+@application.route("/removeUserFromSystem", methods=["POST"])
 def remove_user_from_database():
     user_selected = request.form['userToUpdate']
     for court_num, court in courts_test.items():
@@ -243,7 +243,7 @@ def remove_user_from_database():
     mysql.query_db(query)
     return redirect('/admin')
 
-@app.route("/addUserToCourt", methods=["POST"])
+@application.route("/addUserToCourt", methods=["POST"])
 def add_user_to_court():
     """
     Function adds user to a court after checking to see if the correct pin is entered for the user. 
@@ -313,7 +313,7 @@ def add_user_to_court():
     return redirect("/")
 
 
-@app.route("/addUser", methods=["POST"])
+@application.route("/addUser", methods=["POST"])
 def add_user():
     """
     This is an admin function to add users to the database.
@@ -354,7 +354,7 @@ def add_user():
     else:
         print("CREATING NEW USER", file=sys.stderr)
         mysql2 = connectToMySQL(db)
-        query = "INSERT INTO USERS(first_name, pin) VALUES (%(un)s, %(up)s)"
+        query = "INSERT INTO users(first_name, pin) VALUES (%(un)s, %(up)s)"
         data = {
             'un': request.form['addName'],
             'up': request.form['userPin']
@@ -364,7 +364,7 @@ def add_user():
         return redirect("/checkin")
 
 
-@app.route("/updateCourt", methods=["POST"])
+@application.route("/updateCourt", methods=["POST"])
 def update_court():
     """
     Receive request from js file when court timer is up to update court
@@ -398,4 +398,4 @@ def update_court():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    application.run(debug=True)

@@ -44,7 +44,7 @@ def generate_court():
 
 def remove_user_from_db(db, name):
     mysql = connectToMySQL(db)
-    query = "UPDATE ebc_db.users SET onCourt=0 WHERE first_name = '{}';".format(name)
+    query = "UPDATE ebc_schema.users SET onCourt=0 WHERE first_name = '{}';".format(name)
     mysql.query_db(query)
 
 
