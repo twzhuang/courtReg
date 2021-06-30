@@ -10,7 +10,7 @@ application = Flask(__name__)
 
 application.secret_key = "I am a secret key"
 
-db = "ebc_db"
+db = "ebc_schema"
 
 
 '''

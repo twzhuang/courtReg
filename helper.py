@@ -3,10 +3,10 @@ from mysqlconnection import connectToMySQL
 from datetime import timedelta, datetime
 from flask import flash
 
-ONE_PLAYER_TIME = 10
-TWO_PLAYER_TIME = 15
-THREE_PLAYER_TIME = 20
-FOUR_PLAYER_TIME = 25
+ONE_PLAYER_TIME = 1
+TWO_PLAYER_TIME = 16
+THREE_PLAYER_TIME = 21
+FOUR_PLAYER_TIME = 26
 
 
 def court_is_full(current_or_next, court_num_info):
@@ -59,7 +59,7 @@ def move_players_on_current_court(court_info):
 
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
-        start_time = datetime.now()
+        start_time = datetime.now(pytz.utc)
         court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
         court_info["current"]["end_time"] = calculate_end_time(
             len(court_info["current"]["players"]),
