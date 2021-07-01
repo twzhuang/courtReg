@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset='utf-8'>
+    <title>EBC Add user page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
+        <h2 class="">Elite Badminton Center</h2>
+        <div class="d-inline">
+            <a href="/admin" class="">Admin Page</a>
+            <a href="/" class="p-3">Court Sign Up Page</a>
+            <a href="/logout">Log out</a>
+        </div>
+    </nav>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+            <li class=text-danger>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+    <form action="/addUser" method="post">
+        <h2>Add User to System</h2>
+        <label for="addName">Name:</label>
+        <input type="text" id="addName" name="addName"><br>
+        <label for="userPin">Enter Pin:</label>
+        <input type="number" id="userPin" name="userPin"><br>
+        <input type="submit" class="btn btn-primary">
+    </form>
+</body>
+</html>
