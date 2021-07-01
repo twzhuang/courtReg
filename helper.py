@@ -3,10 +3,10 @@ from mysqlconnection import connectToMySQL
 from datetime import timedelta, datetime
 from flask import flash
 
-ONE_PLAYER_TIME = 1
-TWO_PLAYER_TIME = 1
-THREE_PLAYER_TIME = 5
-FOUR_PLAYER_TIME = 1
+ONE_PLAYER_TIME = 3
+TWO_PLAYER_TIME = 15
+THREE_PLAYER_TIME = 20
+FOUR_PLAYER_TIME = 25
 
 
 def court_is_full(current_or_next, court_num_info):
