@@ -59,8 +59,8 @@ def move_players_on_current_court(court_info):
 
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
-        start_time = datetime.now()
-        court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
+        start_time = datetime.utcnow()
+        court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
         court_info["current"]["end_time"] = calculate_end_time(
             len(court_info["current"]["players"]),
             start_time
