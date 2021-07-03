@@ -11,7 +11,7 @@ application = Flask(__name__)
 application.secret_key = "I am a secret key"
 
 db = "ebc_schema"
-
+# db = "ebc_db"
 
 '''
 To Do That I can remember:
@@ -150,6 +150,7 @@ def logout():
 
 @application.route("/removeUserFromCourt", methods=["POST"])
 def remove_user_from_court():
+    print("IN REMOVE ROUTE", file=sys.stderr)
     # checks to see if pin entered matches pin in database
     # if pin matches it goes through courts dictionary and removes name from list and sets onCourt value to 0
     pin_entered = int(request.form['userPinRemove'])
@@ -293,6 +294,7 @@ def add_user_to_court():
                 if current_or_next == 'current':
                     if not current_court['players']:
                         start_time = datetime.now()
+                        print(f"####################START TIME################# {start_time}", file=sys.stderr)
                         current_court['start_time'] = start_time.strftime("%I:%M %p").lstrip("0")
 
                     # Calculate end time for court depending on number of players
