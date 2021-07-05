@@ -42,7 +42,7 @@
                         <div>
                             <div class="row">
                                 <span hidden class="end_time" id="end_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}</span>
-                                <p class="col">Time Start: <span class="start_time font-weight-bold" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></p>
+                                <!-- <p class="col">Time Start: <span class="start_time font-weight-bold" id="start_time_{{i}}">{{ courts_test[ 'court' ~ i ]['current']['start_time'] }}</span></p> -->
                                 <p class="col">Time Remaining: <span class=" font-weight-bold" id="time_remaining_{{i}}" value="{{ courts_test[ 'court' ~ i ]['current']['end_time'] }}"></span></p>
                             </div>
                             <div class="row">
@@ -172,21 +172,30 @@
                     end_time.setSeconds(seconds);
 
                     var x = setInterval(function(end_time, i) {
-                        var now = new Date().getTime();
-                        var diff = end_time.getTime() - now;
+                    var now = new Date()
+                    // Convert current time to UTC time
+                    now.setHours(now.getUTCHours());
+                    now.setMinutes(now.getUTCMinutes());
+                    now.setSeconds(now.getUTCSeconds());
 
-                        // Time calculations for minutes and seconds
-                        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                        seconds = seconds.toString().padStart(2, '0');
+                    var diff = end_time.getTime() - now.getTime();
+                    console.log("end_time: ", end_time)
+                    console.log("now: ", now)
+                    console.log("diff: ", diff)
 
-                        document.getElementById("time_remaining_" + (i+1)).innerHTML = minutes + ":" + seconds
+                    // Time calculations for minutes and seconds
+                    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    seconds = seconds.toString().padStart(2, '0');
 
-                        if ((diff - 1000) < 0) {
-                            clearInterval(x); // Stop timer
-                            sendPostReq(i+1); // Tell server to update courts
-                        }
-                    }, 1000, end_time, i)
+                    document.getElementById("time_remaining_" + (i+1)).innerHTML = minutes + ":" + seconds
+
+                    if ((diff - 1000) < 0) {
+                        console.log("Under 1000")
+                        clearInterval(x); // Stop timer
+                        // sendPostReq(i+1); // Tell server to update courts
+                    }
+                }, 1000, end_time, i)
                 }
             }
         }
