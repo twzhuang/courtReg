@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, request, session, flash
 from mysqlconnection import connectToMySQL
-from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time, move_players_on_current_court)
+from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time, move_players_on_current_court, move_players_on_next_on_list)
 import sys
 from datetime import datetime
 import logging
@@ -187,6 +187,11 @@ def remove_user_from_court():
                         else:
                             move_players_on_current_court(courts_test[court_num])
 
+                    #if next is empty, move next next on to up next        
+                    elif current_or_next == "next":
+                        if not court_info["players"]:
+                            move_players_on_next_on_list(courts_test[court_num])
+
     return redirect("/")
 
 
@@ -282,6 +287,11 @@ def add_user_to_court():
             print('Selected court info: {}'.format(selected_court_info), file=sys.stderr)
             print("Cannot add to 'next on' court if court is currently empty", file=sys.stderr)
             flash("Court is currently empty. Please add to current court")
+            is_valid = False
+        elif (not selected_court_info['next']['players']) and current_or_next == 'nextnext':
+            print('Selected court info: {}'.format(selected_court_info), file=sys.stderr)
+            print("Cannot add to 'next next on' court if court is currently empty", file=sys.stderr)
+            flash("Up Next list is currently empty. Please add to the Up Next list")
             is_valid = False
         else:
             # check if court is full before adding player to court
@@ -382,11 +392,19 @@ def update_court():
 
     # Move "next on" players to "currently on"
     court_info["current"] = court_info["next"]
-    court_info["next"] = {
-        "start_time": "",
-        "end_time": "",
-        "players": []
-    }
+    if court_info["nextnext"]:
+        court_info['next'] = court_info['nextnext']
+        court_info["nextnext"] = {
+            "start_time": "",
+            "end_time": "",
+            "players": []
+        }
+    else:
+        court_info["next"] = {
+            "start_time": "",
+            "end_time": "",
+            "players": []
+        }
 
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
