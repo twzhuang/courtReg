@@ -205,7 +205,7 @@ def admin_remove():
                 remove_user_from_db(db, name_selected)
 
                 if current_or_next == "current":
-                    # if not empty update end time
+                        # if not empty update end time
                     if court_info["players"]:
                         court_info['end_time'] = calculate_end_time(
                             len(court_info['players']),
@@ -214,6 +214,11 @@ def admin_remove():
                     # if empty, reset court and move next on players
                     else:
                         move_players_on_current_court(courts_test[court_num])
+
+                    #if next is empty, move next next on to up next        
+                elif current_or_next == "next":
+                    if not court_info["players"]:
+                        move_players_on_next_on_list(courts_test[court_num])
     return redirect("/admin")
 
 @application.route("/updateUser", methods=["POST"])
