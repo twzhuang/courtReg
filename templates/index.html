@@ -58,6 +58,13 @@
                                         <p class="font-weight-bold">Up Next:</p>
                                         <ul class="pl-3">
                                     {% endif %}
+                                    {% if current_next == 'nextnext' %}
+                                            </ul>
+                                        </div>
+                                        <div class="col">
+                                        <p class="font-weight-bold">Up Next 2:</p>
+                                        <ul class="pl-3">
+                                    {% endif %}
                                     {% for player in court_info['players'] %}
                                         <li>{{ player }}</li>
                                     {% endfor %}
@@ -104,6 +111,7 @@
                         <select id="current_or_next" name="current_or_next">
                             <option value="current">Current</option>
                             <option value="next">Next On</option>
+                            <option value="nextnext">Next Next On</option>
                         </select>
                     </p>
                     <p>

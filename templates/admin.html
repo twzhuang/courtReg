@@ -57,6 +57,13 @@
                                         <p class="font-weight-bold">Up Next:</p>
                                         <ul class="pl-3">
                                     {% endif %}
+                                    {% if current_next == 'nextnext' %}
+                                            </ul>
+                                        </div>
+                                        <div class="col">
+                                        <p class="font-weight-bold">Up Next 2:</p>
+                                        <ul class="pl-3">
+                                    {% endif %}
                                     {% for player in court_info['players'] %}
                                         <li>
                                             {{ player }}
