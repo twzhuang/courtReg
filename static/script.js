@@ -52,9 +52,17 @@
                 end_time.setSeconds(seconds);
 
                 var x = setInterval(function(end_time, i) {
-                    var now = new Date().getTime();
-                    var diff = end_time.getTime() - now;
-                    //console.log("Diff variable: " + diff);
+                    var now = new Date()
+                    // Convert current time to UTC time
+                    now.setHours(now.getUTCHours());
+                    now.setMinutes(now.getUTCMinutes());
+                    now.setSeconds(now.getUTCSeconds());
+
+                    var diff = end_time.getTime() - now.getTime();
+                    console.log("end_time: ", end_time)
+                    console.log("now: ", now)
+                    console.log("diff: ", diff)
+
                     // Time calculations for minutes and seconds
                     var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     var seconds = Math.floor((diff % (1000 * 60)) / 1000);
@@ -62,7 +70,7 @@
 
                     document.getElementById("time_remaining_" + (i+1)).innerHTML = minutes + ":" + seconds
 
-                    if ((diff - 25201000) < 0) {
+                    if ((diff - 1000) < 0) {
                         console.log("Under 1000")
                         clearInterval(x); // Stop timer
                         sendPostReq(i+1); // Tell server to update courts

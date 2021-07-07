@@ -11,7 +11,7 @@ application = Flask(__name__)
 application.secret_key = "I am a secret key"
 
 db = "ebc_schema"
-
+# db = "ebc_db"
 
 '''
 To Do That I can remember:
@@ -150,6 +150,7 @@ def logout():
 
 @application.route("/removeUserFromCourt", methods=["POST"])
 def remove_user_from_court():
+    print("IN REMOVE ROUTE", file=sys.stderr)
     # checks to see if pin entered matches pin in database
     # if pin matches it goes through courts dictionary and removes name from list and sets onCourt value to 0
     pin_entered = int(request.form['userPinRemove'])
@@ -180,7 +181,7 @@ def remove_user_from_court():
                         if court_info["players"]:
                             court_info['end_time'] = calculate_end_time(
                                 len(court_info['players']),
-                                datetime.strptime(court_info['start_time'], "%I:%M %p"),
+                                datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
                             )
                         # if empty, reset court and move next on players
                         else:
@@ -203,7 +204,7 @@ def admin_remove():
                     if court_info["players"]:
                         court_info['end_time'] = calculate_end_time(
                             len(court_info['players']),
-                            datetime.strptime(court_info['start_time'], "%I:%M %p"),
+                            datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
                         )
                     # if empty, reset court and move next on players
                     else:
@@ -292,13 +293,13 @@ def add_user_to_court():
                 # if court is empty and court selection is current, add a start time and end time
                 if current_or_next == 'current':
                     if not current_court['players']:
-                        start_time = datetime.now()
-                        current_court['start_time'] = start_time.strftime("%I:%M %p").lstrip("0")
+                        start_time = datetime.utcnow()
+                        current_court['start_time'] = start_time.strftime("%I:%M:%S %p").lstrip("0")
 
                     # Calculate end time for court depending on number of players
                     current_court['end_time'] = calculate_end_time(
                         len(current_court["players"]) + 1,
-                        datetime.strptime(current_court['start_time'], "%I:%M %p")
+                        datetime.strptime(current_court['start_time'], "%I:%M:%S %p")
                     )
 
                 # Add player to court
@@ -389,8 +390,8 @@ def update_court():
 
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
-        start_time = datetime.now()
-        court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
+        start_time = datetime.utcnow()
+        court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
         court_info["current"]["end_time"] = calculate_end_time(
             len(court_info["current"]["players"]),
             start_time,
