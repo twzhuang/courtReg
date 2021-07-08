@@ -161,10 +161,10 @@ def remove_user_from_court():
     is_valid = True
 
     if pin_entered < 1:
-        flash("This field is required", "userPinAdd")
+        flash("This field is required", "removeerror")
         is_valid = False
     elif pin_entered != user[0]['pin']:
-        flash("Incorrect Pin")
+        flash("Incorrect Pin", "removeerror")
         is_valid = False
     if not is_valid:
         return redirect("/")
@@ -266,7 +266,7 @@ def add_user_to_court():
     mysql = connectToMySQL(db)
     query = "SELECT * FROM {}.users".format(db)
     users = mysql.query_db(query)
-
+    
     pin_entered = int(request.form['userPinAdd'])
     name_selected = request.form['personNameAdd']
     court_entered = request.form['courtNum']
@@ -280,10 +280,10 @@ def add_user_to_court():
     print("USER {}".format(user), file=sys.stderr)
 
     if pin_entered < 1:
-        flash("Pin is required", "userPinAdd")
+        flash("Pin is required", "adderror")
         is_valid = False
     elif pin_entered != user[0]['pin']:
-        flash("Incorrect Pin")
+        flash("Incorrect Pin", "adderror")
         is_valid = False
     else:
         # Check if court is currently empty
@@ -291,18 +291,18 @@ def add_user_to_court():
         if (not selected_court_info['current']['players']) and current_or_next == 'next':
             print('Selected court info: {}'.format(selected_court_info), file=sys.stderr)
             print("Cannot add to 'next on' court if court is currently empty", file=sys.stderr)
-            flash("Court is currently empty. Please add to current court")
+            flash("Court is currently empty. Please add to current court", "adderror")
             is_valid = False
         elif (not selected_court_info['next']['players']) and current_or_next == 'nextnext':
             print('Selected court info: {}'.format(selected_court_info), file=sys.stderr)
             print("Cannot add to 'next next on' court if court is currently empty", file=sys.stderr)
-            flash("Up Next list is currently empty. Please add to the Up Next list")
+            flash("Up Next list is currently empty. Please add to the Up Next list", "adderror")
             is_valid = False
         else:
             # check if court is full before adding player to court
             if court_is_full(current_or_next, courts_test[court_entered]):
                 print("Court is full", file=sys.stderr)
-                flash("This court is currently full. Please choose to be next on the court or choose another court.")
+                flash("This court is currently full. Please choose to be next on the court or choose another court.", "adderror")
                 is_valid = False
             else:
                 # if court is empty and court selection is current, add a start time and end time
@@ -339,20 +339,20 @@ def add_user():
     is_valid = True
     # name not entered
     if len(request.form['addName']) < 1:
-        flash("Name is required", "addName")
+        flash("Name is required", "checkinerror")
         is_valid = False
     # name format doesn't match
     elif not (request.form['addName'].isalpha()) or len(request.form['addName']) < 2:
-        flash("Name must contain at least two letters and contain only letters", "addName")
+        flash("Name must contain at least two letters and contain only letters", "checkinerror")
         is_valid = False
 
     # pin not entered
     if len(request.form['userPin']) < 1:
-        flash("Pin is required", "userPin")
+        flash("Pin is required", "checkinerror")
         is_valid = False
     # pin format doesn't match
     elif not (request.form['userPin'].isnumeric()):
-        flash("Pin must be a number", "userPin")
+        flash("Pin must be a number", "checkinerror")
         is_valid = False
     else:
         print("CHECKING IF USER ALREADY EXISTS", file=sys.stderr)
@@ -362,7 +362,7 @@ def add_user():
         existing_user = mysql.query_db(query, data)
         if existing_user:
             print("User Exists", file=sys.stderr)
-            flash("The name you entered has already been taken. Please enter another one.", "email")
+            flash("The name you entered has already been taken. Please enter another one.", "checkinerror")
             is_valid = False
 
     if not is_valid:
@@ -376,6 +376,7 @@ def add_user():
             'up': request.form['userPin']
         }
         user = mysql2.query_db(query, data)
+        flash("You have successfully checked in!", "checkinsuccess")
         print("USER ADDED TO DB: {}".format(user), file=sys.stderr)
         return redirect("/checkin")
 

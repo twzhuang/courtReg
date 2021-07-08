@@ -21,15 +21,6 @@
             <a href="/admin">Admin</a>
         </div>
     </nav>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <ul class=flashes>
-        {% for message in messages %}
-            <li class=text-danger>{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-    {% endwith %}
     <div class="p-4 h-100">
         <header>
             <p>Current Time: <span id="clock"></span></p>
@@ -85,6 +76,15 @@
             <div class="row pt-2" style="height: 30%">
                 <form class="col" action="/addUserToCourt" method="post" style="display:inline-block">
                     <h2>Sign up for a court</h2>
+                    {% with messages = get_flashed_messages(category_filter=["adderror"]) %}
+                    {% if messages %}
+                        <ul class=flashes>
+                        {% for message in messages %}
+                            <li class=text-danger>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% endwith %}
                     <p>
                         <label for="personNameAdd">Name:</label>
                         <select id="personNameAdd" name="personNameAdd" required>
@@ -116,13 +116,22 @@
                     </p>
                     <p>
                         <label for="userPinAdd">Enter Pin:</label>
-                        <input type="password" id="userPinAdd" name="userPinAdd" required>
+                        <input type="number" id="userPinAdd" name="userPinAdd" required>
                     </p>
                     <input type="submit" class="btn btn-primary">
                 </form>
     
                 <form class="col" action="/removeUserFromCourt" method="post">
                     <h2>Remove yourself from a court</h2>
+                    {% with messages = get_flashed_messages(category_filter=["removeerror"]) %}
+                    {% if messages %}
+                        <ul class=flashes>
+                        {% for message in messages %}
+                            <li class=text-danger>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% endwith %}
                     <p>
                         <label for="personNameRemove">Name:</label>
                         <select id="personNameRemove" name="personNameRemove" required>
@@ -133,7 +142,7 @@
                     </p>
                     <p>
                         <label for="userPinRemove">Password:</label>
-                        <input type="password" id="userPinRemove" name="userPinRemove" required>
+                        <input type="number" id="userPinRemove" name="userPinRemove" required>
                     </p>
                     <input type="submit" class="btn btn-primary">
                 </form>
