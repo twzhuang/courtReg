@@ -37,6 +37,11 @@ def generate_court():
             "start_time": "",
             "end_time": "",
             "players": []
+        },
+        "nextnext": {
+            "start_time": "",
+            "end_time": "",
+            "players": []
         }
     }
     return court_info
@@ -57,6 +62,14 @@ def move_players_on_current_court(court_info):
         "players": []
     }
 
+    if court_info["nextnext"]["players"]:
+        court_info["next"] = court_info["nextnext"]
+        court_info["nextnext"] = {
+            "start_time": "",
+            "end_time": "",
+            "players": []
+        }
+
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
         start_time = datetime.utcnow()
@@ -66,6 +79,13 @@ def move_players_on_current_court(court_info):
             start_time
         )
 
+def move_players_on_next_on_list(court_info):
+    court_info["next"] = court_info["nextnext"]
+    court_info["nextnext"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": []
+    }
 
 def calculate_end_time(num_players, start_time):
     """Calculate the end time for the court depending on the number of players on court"""

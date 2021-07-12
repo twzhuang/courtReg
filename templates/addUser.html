@@ -14,13 +14,20 @@
             <a href="/logout">Log out</a>
         </div>
     </nav>
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(category_filter=["checkinerror"]) %}
     {% if messages %}
         <ul class=flashes>
         {% for message in messages %}
             <li class=text-danger>{{ message }}</li>
         {% endfor %}
         </ul>
+    {% endif %}
+    {% endwith %}
+    {% with messages = get_flashed_messages(category_filter=["checkinsuccess"]) %}
+    {% if messages %}
+        {% for message in messages %}
+            <p class=text-success >{{ message }}</p>
+        {% endfor %}
     {% endif %}
     {% endwith %}
     <form action="/addUser" method="post">
