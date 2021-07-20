@@ -41,15 +41,26 @@
     function getEndTime ( end_time_arr ) {
         for (var i = 0; i < end_time_arr.length; i++) {
             court_end_time = end_time_arr[i].textContent;
+            console.log(`End time UTC from application.py for court number ${i+1}: ${court_end_time}`);
+
+
 
 //          End time is currently a string so we need to parse it and create a Date object for it
             if (court_end_time != "") {
-                let end_time = new Date();
-                let [hours, minutes, seconds] = court_end_time.split(":")
+//              Parse the court end time and assign to a new variable
+//              Datetime object from application.py comes in the following format: 'YYYY-MM-DD HH:MM:SS.mmmmmm'
+                var [day, time] = court_end_time.split(" ");
+                console.log(`End day: ${day}`);
+                console.log(`End time: ${time}`);
 
-                end_time.setHours(+hours);
-                end_time.setMinutes(minutes);
-                end_time.setSeconds(seconds);
+                var end_time = new Date(`${day}T${time.split(".")[0]}`);
+                console.log(`End time: ${end_time}`);
+//                let end_time = new Date();
+//                let [hours, minutes, seconds] = court_end_time.split(":")
+
+//                end_time.setHours(+hours);
+//                end_time.setMinutes(minutes);
+//                end_time.setSeconds(seconds);
 
                 var x = setInterval(function(end_time, i) {
                     var now = new Date()

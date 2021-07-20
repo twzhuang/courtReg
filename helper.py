@@ -90,6 +90,7 @@ def move_players_on_next_on_list(court_info):
 def calculate_end_time(num_players, start_time):
     """Calculate the end time for the court depending on the number of players on court"""
     end_time = None
+    print(f"START TIME UTC NOW: {start_time}", file=sys.stderr)
     if num_players == 1:
         end_time = start_time + timedelta(minutes=ONE_PLAYER_TIME)
     elif num_players == 2:
@@ -98,5 +99,6 @@ def calculate_end_time(num_players, start_time):
         end_time = start_time + timedelta(minutes=THREE_PLAYER_TIME)
     elif num_players == 4:
         end_time = start_time + timedelta(minutes=FOUR_PLAYER_TIME)
-    return end_time.strftime("%H:%M:%S")
+    return end_time
+    # return end_time.strftime("%H:%M:%S")
 

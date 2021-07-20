@@ -10,8 +10,8 @@ application = Flask(__name__)
 
 application.secret_key = "I am a secret key"
 
-db = "ebc_schema"
-# db = "ebc_db"
+# db = "ebc_schema"
+db = "ebc_db"
 
 '''
 To Do That I can remember:
@@ -51,7 +51,9 @@ def main():
 
     for person in users_on_court:  # makes list of people that can removed
         users_to_remove.append(person['first_name'])
-    return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
+
+    print(f"END TIME UTC NOW: {datetime.utcnow()}", file=sys.stderr)
+    return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test, end_time=datetime.utcnow())
 
 
 @application.route("/clearUserTable")
@@ -181,7 +183,8 @@ def remove_user_from_court():
                         if court_info["players"]:
                             court_info['end_time'] = calculate_end_time(
                                 len(court_info['players']),
-                                datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
+                                # datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
+                                court_info['start_time']
                             )
                         # if empty, reset court and move next on players
                         else:
@@ -209,7 +212,8 @@ def admin_remove():
                     if court_info["players"]:
                         court_info['end_time'] = calculate_end_time(
                             len(court_info['players']),
-                            datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
+                            court_info['start_time']
+                            # datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
                         )
                     # if empty, reset court and move next on players
                     else:
@@ -308,13 +312,15 @@ def add_user_to_court():
                 # if court is empty and court selection is current, add a start time and end time
                 if current_or_next == 'current':
                     if not current_court['players']:
-                        start_time = datetime.utcnow()
-                        current_court['start_time'] = start_time.strftime("%I:%M:%S %p").lstrip("0")
+                        # start_time = datetime.utcnow()
+                        # current_court['start_time'] = start_time.strftime("%I:%M:%S %p").lstrip("0")
+                        current_court['start_time'] = datetime.utcnow()
 
                     # Calculate end time for court depending on number of players
                     current_court['end_time'] = calculate_end_time(
                         len(current_court["players"]) + 1,
-                        datetime.strptime(current_court['start_time'], "%I:%M:%S %p")
+                        current_court['start_time']
+                        # datetime.strptime(current_court['start_time'], "%I:%M:%S %p")
                     )
 
                 # Add player to court
@@ -392,6 +398,7 @@ def update_court():
     court_num = data["court_number"]
     court_info = courts_test["court" + str(court_num)]
 
+
     # Remove players from the court in db
     for player in court_info["current"]["players"]:
         remove_user_from_db(db, player)
@@ -414,11 +421,13 @@ def update_court():
 
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
-        start_time = datetime.utcnow()
-        court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
+        # start_time = datetime.utcnow()
+        # court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
+        court_info["current"]["start_time"] = datetime.utcnow()
         court_info["current"]["end_time"] = calculate_end_time(
             len(court_info["current"]["players"]),
-            start_time,
+            # start_time,
+            court_info["current"]["start_time"]
         )
     return redirect("/")
 
