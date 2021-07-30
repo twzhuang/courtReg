@@ -10,8 +10,8 @@ application = Flask(__name__)
 
 application.secret_key = "I am a secret key"
 
-# db = "ebc_schema"
-db = "ebc_db"
+db = "ebc_schema"
+# db = "ebc_db"
 
 '''
 To Do That I can remember:
@@ -52,7 +52,6 @@ def main():
     for person in users_on_court:  # makes list of people that can removed
         users_to_remove.append(person['first_name'])
 
-    print(f"END TIME UTC NOW: {datetime.utcnow()}", file=sys.stderr)
     return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test, end_time=datetime.utcnow())
 
 
@@ -396,39 +395,46 @@ def update_court():
     data = request.get_json()
     print(data, file=sys.stderr)
     court_num = data["court_number"]
+    end_time = datetime.strptime(data["end_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    print(f"################### END TIME ########################### {end_time}", file=sys.stderr)
+    print(f"END TIME UTC NOW: {datetime.utcnow()}", file=sys.stderr)
+
     court_info = courts_test["court" + str(court_num)]
+    print(f"################### COURT INFO IN UPDATE COURT ROUTE ########################### {court_info}", file=sys.stderr)
 
+    # if current time is past end_time, update court with new players
+    # prevents the court from updating multiple times from different AJAX requests from multiple tabs
+    if datetime.utcnow() > court_info["current"]["end_time"]:
+        # Remove players from the court in db
+        for player in court_info["current"]["players"]:
+            remove_user_from_db(db, player)
 
-    # Remove players from the court in db
-    for player in court_info["current"]["players"]:
-        remove_user_from_db(db, player)
+        # Move "next on" players to "currently on"
+        court_info["current"] = court_info["next"]
+        if court_info["nextnext"]:
+            court_info['next'] = court_info['nextnext']
+            court_info["nextnext"] = {
+                "start_time": "",
+                "end_time": "",
+                "players": []
+            }
+        else:
+            court_info["next"] = {
+                "start_time": "",
+                "end_time": "",
+                "players": []
+            }
 
-    # Move "next on" players to "currently on"
-    court_info["current"] = court_info["next"]
-    if court_info["nextnext"]:
-        court_info['next'] = court_info['nextnext']
-        court_info["nextnext"] = {
-            "start_time": "",
-            "end_time": "",
-            "players": []
-        }
-    else:
-        court_info["next"] = {
-            "start_time": "",
-            "end_time": "",
-            "players": []
-        }
-
-    # Set start time and end time for new players on court
-    if court_info["current"]["players"]:
-        # start_time = datetime.utcnow()
-        # court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
-        court_info["current"]["start_time"] = datetime.utcnow()
-        court_info["current"]["end_time"] = calculate_end_time(
-            len(court_info["current"]["players"]),
-            # start_time,
-            court_info["current"]["start_time"]
-        )
+        # Set start time and end time for new players on court
+        if court_info["current"]["players"]:
+            # start_time = datetime.utcnow()
+            # court_info["current"]["start_time"] = start_time.strftime(c).lstrip("0")
+            court_info["current"]["start_time"] = datetime.utcnow()
+            court_info["current"]["end_time"] = calculate_end_time(
+                len(court_info["current"]["players"]),
+                # start_time,
+                court_info["current"]["start_time"]
+            )
     return redirect("/")
 
 

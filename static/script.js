@@ -1,6 +1,6 @@
 (function () {
 
-    function sendPostReq(courtNum) {
+    function sendPostReq(courtNum, end_time) {
         var xhttp = new XMLHttpRequest();
         xhttp.open("POST", '/updateCourt', true);
         //Send the proper header information along with the request
@@ -21,7 +21,7 @@
                 }
             }
         };
-        xhttp.send(JSON.stringify({court_number: courtNum}))
+        xhttp.send(JSON.stringify({court_number: courtNum, end_time: end_time}))
 
     }
 
@@ -65,6 +65,9 @@
                 var x = setInterval(function(end_time, i) {
                     var now = new Date()
                     // Convert current time to UTC time
+                    now.setDate(now.getUTCDate());
+                    now.setMonth(now.getUTCMonth());
+                    now.setFullYear(now.getUTCFullYear());
                     now.setHours(now.getUTCHours());
                     now.setMinutes(now.getUTCMinutes());
                     now.setSeconds(now.getUTCSeconds());
@@ -84,7 +87,7 @@
                     if ((diff - 1000) < 0) {
                         console.log("Under 1000")
                         clearInterval(x); // Stop timer
-                        sendPostReq(i+1); // Tell server to update courts
+                        sendPostReq(i+1, end_time); // Tell server to update courts
                     }
                 }, 1000, end_time, i)
             }
