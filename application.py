@@ -13,13 +13,20 @@ application.secret_key = "I am a secret key"
 db = "ebc_schema"
 # db = "ebc_db"
 
-'''
-To Do That I can remember:
-1. create function that allows admin to reserve court time
-2. update user function
-3. remove user from database function
-'''
-
+# challenge court dictionary
+challenge_court = {
+    "champs":{
+        "player1": "",
+        "player2": "",
+        "streak": 0
+    },
+    "challengers":{
+        "player1": "",
+        "player2": ""
+    },
+    #this will be a list of dictionaries containing two player names
+    "listofplayers": [] 
+}
 
 num_courts = 8
 # Dictionary to store all courts and each court is a list of names
@@ -266,7 +273,7 @@ def add_user_to_court():
     mysql = connectToMySQL(db)
     query = "SELECT * FROM {}.users".format(db)
     users = mysql.query_db(query)
-    
+
     pin_entered = int(request.form['userPinAdd'])
     name_selected = request.form['personNameAdd']
     court_entered = request.form['courtNum']
@@ -284,6 +291,9 @@ def add_user_to_court():
         is_valid = False
     elif pin_entered != user[0]['pin']:
         flash("Incorrect Pin", "adderror")
+        is_valid = False
+    elif selected_court_info["reserved"]==True:
+        flash("Court is Reserved. Please sign up for another court", "adderror")
         is_valid = False
     else:
         # Check if court is currently empty
@@ -391,6 +401,7 @@ def update_court():
     print(data, file=sys.stderr)
     court_num = data["court_number"]
     court_info = courts_test["court" + str(court_num)]
+    print("current end time is " + court_info["current"]["end_time"])
 
     # Remove players from the court in db
     for player in court_info["current"]["players"]:
@@ -398,6 +409,7 @@ def update_court():
 
     # Move "next on" players to "currently on"
     court_info["current"] = court_info["next"]
+
     if court_info["nextnext"]:
         court_info['next'] = court_info['nextnext']
         court_info["nextnext"] = {
@@ -422,6 +434,45 @@ def update_court():
         )
     return redirect("/")
 
+@application.route("/challengecourt")
+def challengecourt():
+    return render('challenger.html', challenge=challenge_court)
+
+@application.route("/reservecourt", methods=["POST"])
+def reservecourt():
+    court_entered = request.form['courtNum']
+    court_info = courts_test[court_entered]
+    court_info["reserved"]=True
+    print("Reserved Court")
+    for player in court_info["current"]["players"]:
+        remove_user_from_db(db, player)
+    for player in court_info["next"]["players"]:
+        remove_user_from_db(db, player)
+    for player in court_info["nextnext"]["players"]:
+        remove_user_from_db(db, player)
+    court_info["current"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": []
+    }
+    court_info["next"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": []
+    }
+    court_info["nextnext"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": []
+    }
+    return redirect("/admin")
+
+@application.route("/opencourt", methods=["POST"])
+def opencourt():
+    court_entered = request.form['courtNum']
+    court_info = courts_test[court_entered]
+    court_info["reserved"]=False
+    return redirect('/admin')
 
 if __name__ == '__main__':
     application.run(debug=True)

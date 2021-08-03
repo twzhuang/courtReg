@@ -42,7 +42,8 @@ def generate_court():
             "start_time": "",
             "end_time": "",
             "players": []
-        }
+        },
+        "reserved": False
     }
     return court_info
 
@@ -99,4 +100,3 @@ def calculate_end_time(num_players, start_time):
     elif num_players == 4:
         end_time = start_time + timedelta(minutes=FOUR_PLAYER_TIME)
     return end_time.strftime("%H:%M:%S")
-
