@@ -11,6 +11,10 @@
         .tableheight{
             height: 300px;
         }
+
+        .reserved{
+            background-color: gray;
+        }
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
@@ -29,7 +33,8 @@
         <div class="container-fluid h-100">
             <div class="row" style="height: 30%">
                 {% for i in range(1, courts_test|length + 1) %}
-                    <div class="col border p-3">
+
+                    <div class="col border p-3 {{'reserved' if courts_test['court' ~ i]['reserved']}}">
                         <h3 class="text-center px-2">COURT {{i}}</h3>
                         <div>
                             <div class="row">
