@@ -422,13 +422,15 @@ def update_court():
         court_info["nextnext"] = {
             "start_time": "",
             "end_time": "",
-            "players": []
+            "players": [],
+            "reserved": False
         }
     else:
         court_info["next"] = {
             "start_time": "",
             "end_time": "",
-            "players": []
+            "players": [],
+            "reserved": False
         }
 
     # Set start time and end time for new players on court
@@ -465,12 +467,14 @@ def reservecourt():
     court_info["next"] = {
         "start_time": "",
         "end_time": "",
-        "players": []
+        "players": [],
+        "reserved": False
     }
     court_info["nextnext"] = {
         "start_time": "",
         "end_time": "",
-        "players": []
+        "players": [],
+        "reserved": False
     }
     return redirect("/admin")
 

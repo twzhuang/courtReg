@@ -37,12 +37,14 @@ def generate_court():
         "next": {
             "start_time": "",
             "end_time": "",
-            "players": []
+            "players": [],
+            "reserved": False
         },
         "nextnext": {
             "start_time": "",
             "end_time": "",
-            "players": []
+            "players": [],
+            "reserved": False
         }
     }
     return court_info
@@ -60,7 +62,8 @@ def move_players_on_current_court(court_info):
     court_info["next"] = {
         "start_time": "",
         "end_time": "",
-        "players": []
+        "players": [],
+        "reserved": False
     }
 
     if court_info["nextnext"]["players"]:
@@ -68,7 +71,8 @@ def move_players_on_current_court(court_info):
         court_info["nextnext"] = {
             "start_time": "",
             "end_time": "",
-            "players": []
+            "players": [],
+            "reserved": False
         }
 
     # Set start time and end time for new players on court
@@ -85,7 +89,8 @@ def move_players_on_next_on_list(court_info):
     court_info["nextnext"] = {
         "start_time": "",
         "end_time": "",
-        "players": []
+        "players": [],
+        "reserved": False
     }
 
 def calculate_end_time(num_players, start_time):
