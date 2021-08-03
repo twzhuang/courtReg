@@ -31,7 +31,8 @@ def generate_court():
         "current": {
             "start_time": "",
             "end_time": "",
-            "players": []
+            "players": [],
+            "reserved": False
         },
         "next": {
             "start_time": "",
@@ -42,8 +43,7 @@ def generate_court():
             "start_time": "",
             "end_time": "",
             "players": []
-        },
-        "reserved": False
+        }
     }
     return court_info
 

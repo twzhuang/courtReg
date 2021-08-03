@@ -41,24 +41,31 @@ mysql.query_db(query)
 
 @application.route("/")
 def main():
-    print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
-    names_of_users = []  # list of users not on a court
-    users_to_remove = []  # list of users on a court
+    if not 'loggedin' in session:
+        print("================INSIDE IF STATEMENT=============", file=sys.stderr)
+        session['loggedin'] = False
+        return redirect('/loginpage')
+    if session['loggedin']==False:
+        return redirect('/loginpage')
+    else:
+        print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
+        names_of_users = []  # list of users not on a court
+        users_to_remove = []  # list of users on a court
 
-    mysql = connectToMySQL(db)  # this is to create list of people not on a court
-    query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
-    users = mysql.query_db(query)
+        mysql = connectToMySQL(db)  # this is to create list of people not on a court
+        query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
+        users = mysql.query_db(query)
 
-    mysql = connectToMySQL(db)  # this is to create list of people on a court
-    query = "Select first_name FROM {}.users where onCourt = 1 ORDER BY first_name;".format(db)
-    users_on_court = mysql.query_db(query)
+        mysql = connectToMySQL(db)  # this is to create list of people on a court
+        query = "Select first_name FROM {}.users where onCourt = 1 ORDER BY first_name;".format(db)
+        users_on_court = mysql.query_db(query)
 
-    for user in users:  # makes list of people not on court
-        names_of_users.append(user['first_name'])
+        for user in users:  # makes list of people not on court
+            names_of_users.append(user['first_name'])
 
-    for person in users_on_court:  # makes list of people that can removed
-        users_to_remove.append(person['first_name'])
-    return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
+        for person in users_on_court:  # makes list of people that can removed
+            users_to_remove.append(person['first_name'])
+        return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
 
 
 @application.route("/clearUserTable")
@@ -292,7 +299,7 @@ def add_user_to_court():
     elif pin_entered != user[0]['pin']:
         flash("Incorrect Pin", "adderror")
         is_valid = False
-    elif selected_court_info["reserved"]==True:
+    elif selected_court_info["current"]["reserved"]==True:
         flash("Court is Reserved. Please sign up for another court", "adderror")
         is_valid = False
     else:
@@ -442,7 +449,6 @@ def challengecourt():
 def reservecourt():
     court_entered = request.form['courtNum']
     court_info = courts_test[court_entered]
-    court_info["reserved"]=True
     print("Reserved Court")
     for player in court_info["current"]["players"]:
         remove_user_from_db(db, player)
@@ -453,7 +459,8 @@ def reservecourt():
     court_info["current"] = {
         "start_time": "",
         "end_time": "",
-        "players": []
+        "players": [],
+        "reserved": True
     }
     court_info["next"] = {
         "start_time": "",
@@ -471,7 +478,7 @@ def reservecourt():
 def opencourt():
     court_entered = request.form['courtNum']
     court_info = courts_test[court_entered]
-    court_info["reserved"]=False
+    court_info["current"]["reserved"]=False
     return redirect('/admin')
 
 if __name__ == '__main__':
