@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, request, session, flash
 from mysqlconnection import connectToMySQL
-from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time, move_players_on_current_court)
+from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time, move_players_on_current_court, move_players_on_next_on_list)
 import sys
 from datetime import datetime
 import logging
@@ -11,15 +11,22 @@ application = Flask(__name__)
 application.secret_key = "I am a secret key"
 
 db = "ebc_schema"
+# db = "ebc_db"
 
-
-'''
-To Do That I can remember:
-1. create function that allows admin to reserve court time
-2. update user function
-3. remove user from database function
-'''
-
+# challenge court dictionary
+challenge_court = {
+    "champs":{
+        "player1": "",
+        "player2": "",
+        "streak": 0
+    },
+    "challengers":{
+        "player1": "",
+        "player2": ""
+    },
+    #this will be a list of dictionaries containing two player names
+    "listofplayers": [] 
+}
 
 num_courts = 8
 # Dictionary to store all courts and each court is a list of names
@@ -34,30 +41,37 @@ mysql.query_db(query)
 
 @application.route("/")
 def main():
-    print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
-    names_of_users = []  # list of users not on a court
-    users_to_remove = []  # list of users on a court
+    if not 'loggedin' in session:
+        print("================INSIDE IF STATEMENT=============", file=sys.stderr)
+        session['loggedin'] = False
+        return redirect('/loginpage')
+    if session['loggedin']==False:
+        return redirect('/loginpage')
+    else:
+        print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
+        names_of_users = []  # list of users not on a court
+        users_to_remove = []  # list of users on a court
 
-    mysql = connectToMySQL(db)  # this is to create list of people not on a court
-    query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
-    users = mysql.query_db(query)
+        mysql = connectToMySQL(db)  # this is to create list of people not on a court
+        query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
+        users = mysql.query_db(query)
 
-    mysql = connectToMySQL(db)  # this is to create list of people on a court
-    query = "Select first_name FROM {}.users where onCourt = 1 ORDER BY first_name;".format(db)
-    users_on_court = mysql.query_db(query)
+        mysql = connectToMySQL(db)  # this is to create list of people on a court
+        query = "Select first_name FROM {}.users where onCourt = 1 ORDER BY first_name;".format(db)
+        users_on_court = mysql.query_db(query)
 
-    for user in users:  # makes list of people not on court
-        names_of_users.append(user['first_name'])
+        for user in users:  # makes list of people not on court
+            names_of_users.append(user['first_name'])
 
-    for person in users_on_court:  # makes list of people that can removed
-        users_to_remove.append(person['first_name'])
-    return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
+        for person in users_on_court:  # makes list of people that can removed
+            users_to_remove.append(person['first_name'])
+        return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
 
 
 @application.route("/clearUserTable")
 def clear_user_table():
-    if not 'loggedin' in session:
-        session['loggedin'] = False
+    if not 'admin' in session:
+        session['admin'] = False
         return redirect('/loginpage')
     mysql = connectToMySQL(db)
     query = "DELETE FROM users"
@@ -68,10 +82,10 @@ def clear_user_table():
 
 @application.route("/checkin")
 def checkinpage():
-    if not 'loggedin' in session:
-        session['loggedin'] = False
+    if not 'admin' in session:
+        session['admin'] = False
         return redirect('/loginpage')    
-    if session['loggedin']==False:
+    if session['admin']==False:
         return redirect('/loginpage')
     else:
         return render_template('addUser.html')
@@ -80,11 +94,11 @@ def checkinpage():
 def admin():
     print("====================== SESSION ====================: {}".format(session), file=sys.stderr)
     # add admin login check
-    if not 'loggedin' in session:
+    if not 'admin' in session:
         print("================INSIDE IF STATEMENT=============", file=sys.stderr)
-        session['loggedin'] = False
+        session['admin'] = False
         return redirect('/loginpage')
-    elif session['loggedin'] == True:
+    elif session['admin'] == True:
         names_of_users = []  # list of users not on a court
         users_to_remove = []  # list of users on a court
         all_users = []
@@ -132,7 +146,10 @@ def login():
             print(session)
             print("password found")
             session['loggedin'] = True
-            return redirect('/admin')
+            if request.form['username']=='ebcadmin':
+                session['admin'] = True
+                return redirect('/admin')
+            return redirect('/')
         else:
             print("password incorrect")
             flash("Password incorrect. Please try again.", "pw")
@@ -150,6 +167,7 @@ def logout():
 
 @application.route("/removeUserFromCourt", methods=["POST"])
 def remove_user_from_court():
+    print("IN REMOVE ROUTE", file=sys.stderr)
     # checks to see if pin entered matches pin in database
     # if pin matches it goes through courts dictionary and removes name from list and sets onCourt value to 0
     pin_entered = int(request.form['userPinRemove'])
@@ -160,10 +178,10 @@ def remove_user_from_court():
     is_valid = True
 
     if pin_entered < 1:
-        flash("This field is required", "userPinAdd")
+        flash("This field is required", "removeerror")
         is_valid = False
     elif pin_entered != user[0]['pin']:
-        flash("Incorrect Pin")
+        flash("Incorrect Pin", "removeerror")
         is_valid = False
     if not is_valid:
         return redirect("/")
@@ -180,11 +198,16 @@ def remove_user_from_court():
                         if court_info["players"]:
                             court_info['end_time'] = calculate_end_time(
                                 len(court_info['players']),
-                                datetime.strptime(court_info['start_time'], "%I:%M %p"),
+                                datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
                             )
                         # if empty, reset court and move next on players
                         else:
                             move_players_on_current_court(courts_test[court_num])
+
+                    #if next is empty, move next next on to up next        
+                    elif current_or_next == "next":
+                        if not court_info["players"]:
+                            move_players_on_next_on_list(courts_test[court_num])
 
     return redirect("/")
 
@@ -199,15 +222,20 @@ def admin_remove():
                 remove_user_from_db(db, name_selected)
 
                 if current_or_next == "current":
-                    # if not empty update end time
+                        # if not empty update end time
                     if court_info["players"]:
                         court_info['end_time'] = calculate_end_time(
                             len(court_info['players']),
-                            datetime.strptime(court_info['start_time'], "%I:%M %p"),
+                            datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
                         )
                     # if empty, reset court and move next on players
                     else:
                         move_players_on_current_court(courts_test[court_num])
+
+                    #if next is empty, move next next on to up next        
+                elif current_or_next == "next":
+                    if not court_info["players"]:
+                        move_players_on_next_on_list(courts_test[court_num])
     return redirect("/admin")
 
 @application.route("/updateUser", methods=["POST"])
@@ -269,10 +297,13 @@ def add_user_to_court():
     print("USER {}".format(user), file=sys.stderr)
 
     if pin_entered < 1:
-        flash("Pin is required", "userPinAdd")
+        flash("Pin is required", "adderror")
         is_valid = False
     elif pin_entered != user[0]['pin']:
-        flash("Incorrect Pin")
+        flash("Incorrect Pin", "adderror")
+        is_valid = False
+    elif selected_court_info["current"]["reserved"]==True:
+        flash("Court is Reserved. Please sign up for another court", "adderror")
         is_valid = False
     else:
         # Check if court is currently empty
@@ -280,25 +311,30 @@ def add_user_to_court():
         if (not selected_court_info['current']['players']) and current_or_next == 'next':
             print('Selected court info: {}'.format(selected_court_info), file=sys.stderr)
             print("Cannot add to 'next on' court if court is currently empty", file=sys.stderr)
-            flash("Court is currently empty. Please add to current court")
+            flash("Court is currently empty. Please add to current court", "adderror")
+            is_valid = False
+        elif (not selected_court_info['next']['players']) and current_or_next == 'nextnext':
+            print('Selected court info: {}'.format(selected_court_info), file=sys.stderr)
+            print("Cannot add to 'next next on' court if court is currently empty", file=sys.stderr)
+            flash("Up Next list is currently empty. Please add to the Up Next list", "adderror")
             is_valid = False
         else:
             # check if court is full before adding player to court
             if court_is_full(current_or_next, courts_test[court_entered]):
                 print("Court is full", file=sys.stderr)
-                flash("This court is currently full. Please choose to be next on the court or choose another court.")
+                flash("This court is currently full. Please choose to be next on the court or choose another court.", "adderror")
                 is_valid = False
             else:
                 # if court is empty and court selection is current, add a start time and end time
                 if current_or_next == 'current':
                     if not current_court['players']:
-                        start_time = datetime.now()
-                        current_court['start_time'] = start_time.strftime("%I:%M %p").lstrip("0")
+                        start_time = datetime.utcnow()
+                        current_court['start_time'] = start_time.strftime("%I:%M:%S %p").lstrip("0")
 
                     # Calculate end time for court depending on number of players
                     current_court['end_time'] = calculate_end_time(
                         len(current_court["players"]) + 1,
-                        datetime.strptime(current_court['start_time'], "%I:%M %p")
+                        datetime.strptime(current_court['start_time'], "%I:%M:%S %p")
                     )
 
                 # Add player to court
@@ -323,20 +359,20 @@ def add_user():
     is_valid = True
     # name not entered
     if len(request.form['addName']) < 1:
-        flash("Name is required", "addName")
+        flash("Name is required", "checkinerror")
         is_valid = False
     # name format doesn't match
     elif not (request.form['addName'].isalpha()) or len(request.form['addName']) < 2:
-        flash("Name must contain at least two letters and contain only letters", "addName")
+        flash("Name must contain at least two letters and contain only letters", "checkinerror")
         is_valid = False
 
     # pin not entered
     if len(request.form['userPin']) < 1:
-        flash("Pin is required", "userPin")
+        flash("Pin is required", "checkinerror")
         is_valid = False
     # pin format doesn't match
     elif not (request.form['userPin'].isnumeric()):
-        flash("Pin must be a number", "userPin")
+        flash("Pin must be a number", "checkinerror")
         is_valid = False
     else:
         print("CHECKING IF USER ALREADY EXISTS", file=sys.stderr)
@@ -346,7 +382,7 @@ def add_user():
         existing_user = mysql.query_db(query, data)
         if existing_user:
             print("User Exists", file=sys.stderr)
-            flash("The name you entered has already been taken. Please enter another one.", "email")
+            flash("The name you entered has already been taken. Please enter another one.", "checkinerror")
             is_valid = False
 
     if not is_valid:
@@ -360,6 +396,7 @@ def add_user():
             'up': request.form['userPin']
         }
         user = mysql2.query_db(query, data)
+        flash("You have successfully checked in!", "checkinsuccess")
         print("USER ADDED TO DB: {}".format(user), file=sys.stderr)
         return redirect("/checkin")
 
@@ -374,6 +411,7 @@ def update_court():
     print(data, file=sys.stderr)
     court_num = data["court_number"]
     court_info = courts_test["court" + str(court_num)]
+    print("current end time is " + court_info["current"]["end_time"])
 
     # Remove players from the court in db
     for player in court_info["current"]["players"]:
@@ -381,22 +419,186 @@ def update_court():
 
     # Move "next on" players to "currently on"
     court_info["current"] = court_info["next"]
-    court_info["next"] = {
-        "start_time": "",
-        "end_time": "",
-        "players": []
-    }
+
+    if court_info["nextnext"]:
+        court_info['next'] = court_info['nextnext']
+        court_info["nextnext"] = {
+            "start_time": "",
+            "end_time": "",
+            "players": [],
+            "reserved": False
+        }
+    else:
+        court_info["next"] = {
+            "start_time": "",
+            "end_time": "",
+            "players": [],
+            "reserved": False
+        }
 
     # Set start time and end time for new players on court
     if court_info["current"]["players"]:
-        start_time = datetime.now()
-        court_info["current"]["start_time"] = start_time.strftime("%I:%M %p").lstrip("0")
+        start_time = datetime.utcnow()
+        court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
         court_info["current"]["end_time"] = calculate_end_time(
             len(court_info["current"]["players"]),
             start_time,
         )
     return redirect("/")
 
+@application.route("/challengecourt")
+def challengecourt():
+    names_of_users = []  # list of users not on a court
+    mysql = connectToMySQL(db)  # this is to create list of people not on a court
+    query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
+    users = mysql.query_db(query)
+    for user in users:  # makes list of people not on court
+        names_of_users.append(user['first_name'])
+    return render_template('challenger.html', names_of_users=names_of_users, challenge=challenge_court)
+
+@application.route("/addtochallengecourt", methods=["POST"])
+def addtochallenge():
+    player1 = request.form ['player1']
+    pin1 = int(request.form['player1pin'])
+    player2 = request.form['player2']
+    pin2 = int(request.form['player2pin'])
+    is_valid = True
+    mysql = connectToMySQL(db)
+    query = "SELECT * FROM {}.users where first_name = '{}';".format(db, player1)
+    player1info = mysql.query_db(query)
+    mysql = connectToMySQL(db)
+    query = "SELECT * FROM {}.users where first_name = '{}';".format(db, player2)
+    player2info = mysql.query_db(query)
+    if player1==player2:
+        flash("Player 1 and Player 2 names must be different", "challengeerror")
+        is_valid = False
+    elif pin1 < 1:
+        flash("Pin is required for Player 1", "challengeerror")
+        is_valid = False
+    elif pin1 != player1info[0]['pin']:
+        flash("Incorrect Pin for Player 1", "challengeerror")
+        is_valid = False
+    elif pin2 < 1:
+        flash("Pin is required for Player 2", "challengeerror")
+        is_valid = False
+    elif pin2 != player2info[0]['pin']:
+        flash("Incorrect Pin for Player 2", "challengeerror")
+        is_valid = False
+    else:
+        if challenge_court["champs"]["player1"]=="" and challenge_court["champs"]["player2"]=="":
+            challenge_court["champs"]["player1"]=player1
+            challenge_court["champs"]["player2"]=player2
+        elif challenge_court["challengers"]["player1"]=="" and challenge_court["challengers"]["player2"]=="":
+            challenge_court["challengers"]["player1"]=player1
+            challenge_court["challengers"]["player2"]=player2
+        else:
+            playersToAdd=[player1, player2]
+            challenge_court["listofplayers"].append(playersToAdd)
+        mysql = connectToMySQL(db)
+        query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, player1)
+        mysql.query_db(query)
+        mysql = connectToMySQL(db)
+        query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, player2)
+        mysql.query_db(query)
+    if not is_valid:
+        return redirect("/challengecourt")
+    return redirect('/challengecourt')
+
+@application.route("/champswon", methods=["POST"])
+def champswon():
+    if challenge_court["champs"]["player1"]=="":
+        flash("Please sign up for challenge court", "challengeerror")
+        return redirect('/challengecourt')
+    if challenge_court["challengers"]["player1"]:
+        if challenge_court["listofplayers"]:
+            challenge_court["challengers"]["player1"] = challenge_court["listofplayers"][0][0]
+            challenge_court["challengers"]["player2"] = challenge_court["listofplayers"][0][1]
+            mysql = connectToMySQL(db)
+            query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["challengers"]["player1"])
+            mysql.query_db(query)
+            mysql = connectToMySQL(db)
+            query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["challengers"]["player2"])
+            mysql.query_db(query)
+            challenge_court["listofplayers"].pop(0)
+        else:
+            challenge_court["challengers"]["player1"] = ""
+            challenge_court["challengers"]["player2"] = ""
+        challenge_court["champs"]["streak"] = challenge_court["champs"]["streak"] + 1
+    else: 
+        flash("Please wait for a challenger to sign up", "challengeerror")
+    return redirect('/challengecourt')
+
+@application.route("/challengerswon", methods=["POST"])
+def challengerswon():
+    if not challenge_court["challengers"]["player1"]:
+        flash("Please wait for a challenger to sign up", "challengeerror")
+        return redirect('/challengecourt')
+    challenge_court["champs"]["player1"] = challenge_court["challengers"]["player1"]
+    challenge_court["champs"]["player2"] = challenge_court["challengers"]["player2"]
+    challenge_court["champs"]["streak"] = 1
+    mysql = connectToMySQL(db)
+    query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["champs"]["player1"])
+    mysql.query_db(query)
+    mysql = connectToMySQL(db)
+    query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["champs"]["player2"])
+    mysql.query_db(query)
+    challenge_court["challengers"]["player1"] = ""
+    challenge_court["challengers"]["player2"] = ""
+    if not challenge_court["listofplayers"]:
+        flash("Please wait for a challenger to sign up", "challengeerror")
+        return redirect('/challengecourt')
+    else:
+        challenge_court["challengers"]["player1"] = challenge_court["listofplayers"][0][0]
+        challenge_court["challengers"]["player2"] = challenge_court["listofplayers"][0][1]
+        challenge_court["listofplayers"].pop(0)
+
+    return redirect('/challengecourt')
+
+@application.route("/reservecourt", methods=["POST"])
+def reservecourt():
+    court_entered = request.form['courtNum']
+    court_info = courts_test[court_entered]
+    print("Reserved Court")
+    for player in court_info["current"]["players"]:
+        remove_user_from_db(db, player)
+    for player in court_info["next"]["players"]:
+        remove_user_from_db(db, player)
+    for player in court_info["nextnext"]["players"]:
+        remove_user_from_db(db, player)
+    court_info["current"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": [],
+        "reserved": True
+    }
+    court_info["next"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": [],
+        "reserved": False
+    }
+    court_info["nextnext"] = {
+        "start_time": "",
+        "end_time": "",
+        "players": [],
+        "reserved": False
+    }
+    return redirect("/admin")
+
+@application.route("/opencourt", methods=["POST"])
+def opencourt():
+    court_entered = request.form['courtNum']
+    court_info = courts_test[court_entered]
+    court_info["current"]["reserved"]=False
+    return redirect('/admin')
+
+# @application.route("/addnewlogin")
+# def newlogin():
+#     mysql = connectToMySQL(db)
+#     query = 'insert into admins (username, password) Values ("ebcaccess", "ebc33540");'
+#     mysql.query_db(query)
+#     print("***************************")
+#     return redirect('/')
 
 if __name__ == '__main__':
     application.run(debug=True)
