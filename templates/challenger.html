@@ -7,5 +7,31 @@
     <p>{{challenge["challengers"]["player1"]}} and {{challenge["challengers"]["player2"]}}</p>
     <h1>Champs</h1>
     <p>{{challenge["champs"]["player1"]}} and {{challenge["champs"]["player2"]}}</p>
+    <h3>Players List</h3>
+    <ol>
+        {%for partners in challenge["listofplayers"]%}
+            <li>{{partners[0]}} and {{partners[1]}}</li>
+        {%endfor%}
+    </ol>
+    <form action="/addtochallengecourt" method="post">
+        <h2>Challenge Court Sign Up</h2>
+        <label for="player1">Enter Player 1 Username</label>
+        <select id="player1" name="player1" required>
+            {% for user in names_of_users%}
+                <option value="{{user}}">{{user}}</option>
+            {% endfor %}
+        </select>
+        <label for="player1pin">Enter Player 1 Pin</label>
+        <input type="number" id="player1pin" name="player1pin">
+        <label for="player2">Enter Player 2 Username</label>
+        <select id="player2" name="player2" required>
+            {% for user in names_of_users%}
+                <option value="{{user}}">{{user}}</option>
+            {% endfor %}
+        </select>
+        <label for="player2pin">Enter Player 2 Pin</label>
+        <input type="number" id="player2pin" name="player2pin">
+        <input type="submit" class="btn btn-primary">
+    </form>
 </body>
 </html>
