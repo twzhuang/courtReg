@@ -14,7 +14,7 @@
             <a href="/logout">Log out</a>
         </div>
     </nav>
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(category_filter=["checkinerror"]) %}
     {% if messages %}
         <ul class=flashes>
         {% for message in messages %}
@@ -23,11 +23,19 @@
         </ul>
     {% endif %}
     {% endwith %}
+    {% with messages = get_flashed_messages(category_filter=["checkinsuccess"]) %}
+    {% if messages %}
+        {% for message in messages %}
+            <p class=text-success >{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
     <form action="/addUser" method="post">
         <h2>Add User to System</h2>
-        <label for="addName">Name:</label>
+        <p>Please enter your name and a numerical pin that will be used for court sign up</p>
+        <label for="addName">Create a Username:</label>
         <input type="text" id="addName" name="addName"><br>
-        <label for="userPin">Enter Pin:</label>
+        <label for="userPin" type="password">Create a Pin:</label>
         <input type="number" id="userPin" name="userPin"><br>
         <input type="submit" class="btn btn-primary">
     </form>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset='utf-8'>
+    <title>Challenge Court</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="p-3">
+    {% with messages = get_flashed_messages(category_filter=["challengeerror"]) %}
+    {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+            <li class=text-danger>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+    <div class="row">
+        <div class="px-3">
+            <h2>Champs</h2>
+            <p>{{challenge["champs"]["player1"]}} {{challenge["champs"]["player2"]}}</p>
+            <p>Winner's Streak: {{challenge["champs"]["streak"]}}</p>
+        </div>
+        <div>
+            <h2>Challengers</h2>
+            <p>{{challenge["challengers"]["player1"]}} {{challenge["challengers"]["player2"]}}</p>  
+        </div>
+        
+    </div>
+    <form action="/champswon" method="post">
+        <h3>Who won this match?</h3>
+        <input type="submit" value="Champs" class="btn btn-primary">
+        <input type="submit" value="Challengers" class="btn btn-success" formaction="/challengerswon">
+    </form>
+    <h3>Players List</h3>
+    <ol>
+        {%for partners in challenge["listofplayers"]%}
+            <li>{{partners[0]}} and {{partners[1]}}</li>
+        {%endfor%}
+    </ol>
+    <form action="/addtochallengecourt" method="post">
+        <h2>Challenge Court Sign Up</h2>
+        <label for="player1">Enter Player 1 Username</label>
+        <select id="player1" name="player1" required>
+            {% for user in names_of_users%}
+                <option value="{{user}}">{{user}}</option>
+            {% endfor %}
+        </select><br>
+        <label for="player1pin">Enter Player 1 Pin</label>
+        <input type="number" id="player1pin" name="player1pin"><br>
+        <label for="player2">Enter Player 2 Username</label>
+        <select id="player2" name="player2" required>
+            {% for user in names_of_users%}
+                <option value="{{user}}">{{user}}</option>
+            {% endfor %}
+        </select><br>
+        <label for="player2pin">Enter Player 2 Pin</label>
+        <input type="number" id="player2pin" name="player2pin"><br>
+        <input type="submit" class="btn btn-primary">
+    </form>
+    
+    </div>
+   
+</body>
+</html>
