@@ -471,14 +471,14 @@ def addtochallenge():
     player2info = mysql.query_db(query)
     if player1==player2:
         flash("Player 1 and Player 2 names must be different", "challengeerror")
-        is_valid=False
-    if pin1 < 1:
+        is_valid = False
+    elif pin1 < 1:
         flash("Pin is required for Player 1", "challengeerror")
         is_valid = False
     elif pin1 != player1info[0]['pin']:
         flash("Incorrect Pin for Player 1", "challengeerror")
         is_valid = False
-    if pin2 < 1:
+    elif pin2 < 1:
         flash("Pin is required for Player 2", "challengeerror")
         is_valid = False
     elif pin2 != player2info[0]['pin']:
@@ -494,9 +494,45 @@ def addtochallenge():
         else:
             playersToAdd=[player1, player2]
             challenge_court["listofplayers"].append(playersToAdd)
+        mysql = connectToMySQL(db)
+        query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, player1)
+        mysql.query_db(query)
+        mysql = connectToMySQL(db)
+        query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, player2)
+        mysql.query_db(query)
     if not is_valid:
         return redirect("/challengecourt")
     return redirect('/challengecourt')
+
+@application.route("/champswon", methods=["POST"])
+def champswon():
+    if challenge_court["champs"]["player1"]=="":
+        flash("Please sign up for challenge court", "challengeerror")
+        return redirect('/challengecourt')
+    if challenge_court["challengers"]["player1"]:
+        if challenge_court["listofplayers"]:
+            challenge_court["challengers"]["player1"] = challenge_court["listofplayers"][0][0]
+            challenge_court["challengers"]["player2"] = challenge_court["listofplayers"][0][1]
+            mysql = connectToMySQL(db)
+            query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["challengers"]["player1"])
+            mysql.query_db(query)
+            mysql = connectToMySQL(db)
+            query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["challengers"]["player2"])
+            mysql.query_db(query)
+            challenge_court["listofplayers"].pop(0)
+        else:
+            challenge_court["challengers"]["player1"] = ""
+            challenge_court["challengers"]["player2"] = ""
+        challenge_court["champs"]["streak"] = challenge_court["champs"]["streak"] + 1
+    else: 
+        flash("Please wait for a challenger to sign up", "challengeerror")
+    return redirect('/challengecourt')
+
+@application.route("/challengerswon", methods=["POST"])
+def challengerswon():
+    challenge_court["champs"]["player1"] = challenger_court["challengers"]["player1"]
+    challenge_court["champs"]["player2"] = challenger_court["challengers"]["player2"]
+    challenge_court["champs"]["streak"] = 1
 
 @application.route("/reservecourt", methods=["POST"])
 def reservecourt():
