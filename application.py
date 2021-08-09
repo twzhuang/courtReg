@@ -70,8 +70,8 @@ def main():
 
 @application.route("/clearUserTable")
 def clear_user_table():
-    if not 'loggedin' in session:
-        session['loggedin'] = False
+    if not 'admin' in session:
+        session['admin'] = False
         return redirect('/loginpage')
     mysql = connectToMySQL(db)
     query = "DELETE FROM users"
@@ -82,10 +82,10 @@ def clear_user_table():
 
 @application.route("/checkin")
 def checkinpage():
-    if not 'loggedin' in session:
-        session['loggedin'] = False
+    if not 'admin' in session:
+        session['admin'] = False
         return redirect('/loginpage')    
-    if session['loggedin']==False:
+    if session['admin']==False:
         return redirect('/loginpage')
     else:
         return render_template('addUser.html')
@@ -94,11 +94,11 @@ def checkinpage():
 def admin():
     print("====================== SESSION ====================: {}".format(session), file=sys.stderr)
     # add admin login check
-    if not 'loggedin' in session:
+    if not 'admin' in session:
         print("================INSIDE IF STATEMENT=============", file=sys.stderr)
-        session['loggedin'] = False
+        session['admin'] = False
         return redirect('/loginpage')
-    elif session['loggedin'] == True:
+    elif session['admin'] == True:
         names_of_users = []  # list of users not on a court
         users_to_remove = []  # list of users on a court
         all_users = []
@@ -146,7 +146,10 @@ def login():
             print(session)
             print("password found")
             session['loggedin'] = True
-            return redirect('/admin')
+            if request.form['username']=='ebcadmin':
+                session['admin'] = True
+                return redirect('/admin')
+            return redirect('/')
         else:
             print("password incorrect")
             flash("Password incorrect. Please try again.", "pw")
@@ -445,7 +448,55 @@ def update_court():
 
 @application.route("/challengecourt")
 def challengecourt():
-    return render('challenger.html', challenge=challenge_court)
+    names_of_users = []  # list of users not on a court
+    mysql = connectToMySQL(db)  # this is to create list of people not on a court
+    query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
+    users = mysql.query_db(query)
+    for user in users:  # makes list of people not on court
+        names_of_users.append(user['first_name'])
+    return render_template('challenger.html', names_of_users=names_of_users, challenge=challenge_court)
+
+@application.route("/addtochallengecourt", methods=["POST"])
+def addtochallenge():
+    player1 = request.form ['player1']
+    pin1 = int(request.form['player1pin'])
+    player2 = request.form['player2']
+    pin2 = int(request.form['player2pin'])
+    is_valid = True
+    mysql = connectToMySQL(db)
+    query = "SELECT * FROM {}.users where first_name = '{}';".format(db, player1)
+    player1info = mysql.query_db(query)
+    mysql = connectToMySQL(db)
+    query = "SELECT * FROM {}.users where first_name = '{}';".format(db, player2)
+    player2info = mysql.query_db(query)
+    if player1==player2:
+        flash("Player 1 and Player 2 names must be different", "challengeerror")
+        is_valid=False
+    if pin1 < 1:
+        flash("Pin is required for Player 1", "challengeerror")
+        is_valid = False
+    elif pin1 != player1info[0]['pin']:
+        flash("Incorrect Pin for Player 1", "challengeerror")
+        is_valid = False
+    if pin2 < 1:
+        flash("Pin is required for Player 2", "challengeerror")
+        is_valid = False
+    elif pin2 != player2info[0]['pin']:
+        flash("Incorrect Pin for Player 2", "challengeerror")
+        is_valid = False
+    else:
+        if challenge_court["champs"]["player1"]=="" and challenge_court["champs"]["player2"]=="":
+            challenge_court["champs"]["player1"]=player1
+            challenge_court["champs"]["player2"]=player2
+        elif challenge_court["challengers"]["player1"]=="" and challenge_court["challengers"]["player2"]=="":
+            challenge_court["challengers"]["player1"]=player1
+            challenge_court["challengers"]["player2"]=player2
+        else:
+            playersToAdd=[player1, player2]
+            challenge_court["listofplayers"].append(playersToAdd)
+    if not is_valid:
+        return redirect("/challengecourt")
+    return redirect('/challengecourt')
 
 @application.route("/reservecourt", methods=["POST"])
 def reservecourt():
@@ -484,6 +535,14 @@ def opencourt():
     court_info = courts_test[court_entered]
     court_info["current"]["reserved"]=False
     return redirect('/admin')
+
+# @application.route("/addnewlogin")
+# def newlogin():
+#     mysql = connectToMySQL(db)
+#     query = 'insert into admins (username, password) Values ("ebcaccess", "ebc33540");'
+#     mysql.query_db(query)
+#     print("***************************")
+#     return redirect('/')
 
 if __name__ == '__main__':
     application.run(debug=True)
