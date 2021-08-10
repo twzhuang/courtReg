@@ -70,6 +70,7 @@ def clear_user_table():
     mysql.query_db(query)
     global courts_test
     courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
+    global challenge_court
     challenge_court = {
     "streak": 0,
     "listofplayers": [] 
@@ -358,8 +359,8 @@ def add_user():
         flash("Name is required", "checkinerror")
         is_valid = False
     # name format doesn't match
-    elif not (request.form['addName'].isalpha()) or len(request.form['addName']) < 2:
-        flash("Name must contain at least two letters and contain only letters", "checkinerror")
+    elif len(request.form['addName']) < 2:
+        flash("Name must contain at least two letters", "checkinerror")
         is_valid = False
 
     # pin not entered
