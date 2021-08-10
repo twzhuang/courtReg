@@ -70,6 +70,10 @@ def clear_user_table():
     mysql.query_db(query)
     global courts_test
     courts_test = {"court{}".format(num): generate_court() for num in range(1, num_courts+1)}
+    challenge_court = {
+    "streak": 0,
+    "listofplayers": [] 
+    }
     return redirect("/admin")
 
 @application.route("/checkin")
