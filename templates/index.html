@@ -11,6 +11,10 @@
         .tableheight{
             height: 300px;
         }
+
+        .reserved{
+            background-color: gray;
+        }
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
@@ -18,8 +22,10 @@
     <nav class="navbar navbar-light bg-light justify-content-between border-bottom">
         <h2 class="">Elite Badminton Center</h2>
         <div class="d-inline">
-            <a href="/admin">Admin</a>
+            <a href="/admin" class="px-3">Admin</a>
+            <a href="/challengecourt">Challenge Court Sign Up</a>
         </div>
+
     </nav>
     <div class="p-4 h-100">
         <header>
@@ -29,7 +35,8 @@
         <div class="container-fluid h-100">
             <div class="row" style="height: 30%">
                 {% for i in range(1, courts_test|length + 1) %}
-                    <div class="col border p-3">
+
+                    <div class="col border p-3 {{'reserved' if courts_test['court' ~ i]['current']['reserved']}}">
                         <h3 class="text-center px-2">COURT {{i}}</h3>
                         <div>
                             <div class="row">
@@ -93,27 +100,60 @@
                             {% endfor %}
                         </select>
                     </p>
-                    <p>
-                        <label for="courtNum">Enter Court Number from 1-8:</label>
-                        <select id="courtNum" name="courtNum">
-                            <option value="court1">1</option>
-                            <option value="court2">2</option>
-                            <option value="court3">3</option>
-                            <option value="court4">4</option>
-                            <option value="court5">5</option>
-                            <option value="court6">6</option>
-                            <option value="court7">7</option>
-                            <option value="court8">8</option>
-                        </select>
-                    </p>
-                    <p>
-                        <label for="current_or_next">Choose to be on court now or up next: </label>
-                        <select id="current_or_next" name="current_or_next">
-                            <option value="current">Current</option>
-                            <option value="next">Next On</option>
-                            <option value="nextnext">Next Next On</option>
-                        </select>
-                    </p>
+                    <div class="mb-3"> 
+                        <div class="form-check form-check-inline">
+                            <label>Select Court Number:</label>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt1" name="courtNum" value="court1" checked>
+                                <label class="form-check-label" for="radioCourt1">1</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt2" name="courtNum" value="court2">
+                                <label class="form-check-label" for="radioCourt2">2</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt3" name="courtNum" value="court3">
+                                <label class="form-check-label" for="radioCourt3">3</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt4" name="courtNum" value="court4">
+                                <label class="form-check-label" for="radioCourt4">4</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt5" name="courtNum" value="court5">
+                                <label class="form-check-label" for="radioCourt5">5</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt6" name="courtNum" value="court6">
+                                <label class="form-check-label" for="radioCourt6">6</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt7" name="courtNum" value="court7">
+                                <label class="form-check-label" for="radioCourt7">7</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCourt8" name="courtNum" value="court8">
+                                <label class="form-check-label" for="radioCourt8">8</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline">
+                            <label>Choose to be on court now or up next: </label>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioCurrent" name="current_or_next" value="current" checked>
+                                <label class="form-check-label" for="radioCurrent">Current</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioNext" name="current_or_next" value="next">
+                                <label class="form-check-label" for="radioNext">Next On</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="radioNextNExt" name="current_or_next" value="nextnext">
+                                <label class="form-check-label" for="radioNextNext">Next Next On</label>
+                            </div>
+                        </div>
+                    </div>
                     <p>
                         <label for="userPinAdd">Enter Pin:</label>
                         <input type="number" id="userPinAdd" name="userPinAdd" required>
