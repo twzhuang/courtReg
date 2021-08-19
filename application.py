@@ -30,7 +30,6 @@ mysql = connectToMySQL(db)
 query = "update {}.users set onCourt=0".format(db)
 mysql.query_db(query)
 
-
 @application.route("/")
 def main():
     if not 'loggedin' in session:
@@ -43,7 +42,7 @@ def main():
         print("====================== SESSION LINE 57 ====================: {}".format(session), file=sys.stderr)
         names_of_users = []  # list of users not on a court
         users_to_remove = []  # list of users on a court
-
+        playerslist = [] # list of players on challenge court
         mysql = connectToMySQL(db)  # this is to create list of people not on a court
         query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
         users = mysql.query_db(query)
@@ -52,12 +51,16 @@ def main():
         query = "Select first_name FROM {}.users where onCourt = 1 ORDER BY first_name;".format(db)
         users_on_court = mysql.query_db(query)
 
+        for pairs in challenge_court["listofplayers"]: #makes list of people on challenge court
+            for player in pairs:
+                playerslist.append(player)
+
         for user in users:  # makes list of people not on court
             names_of_users.append(user['first_name'])
 
         for person in users_on_court:  # makes list of people that can removed
             users_to_remove.append(person['first_name'])
-        return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test)
+        return render_template('index.html', onCourtUsers=users_to_remove, names_of_users=names_of_users, courts_test=courts_test, playerslist = playerslist, challenge=challenge_court)
 
 
 @application.route("/clearUserTable")
@@ -443,24 +446,24 @@ def update_court():
         )
     return redirect("/")
 
-@application.route("/challengecourt")
-def challengecourt():
-    if not 'loggedin' in session:
-        session['loggedin'] = False
-        return redirect('/loginpage')
-    if session['loggedin']==False:
-        return redirect('/loginpage')
-    names_of_users = []  # list of users not on a court
-    playerslist = []
-    mysql = connectToMySQL(db)  # this is to create list of people not on a court
-    query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
-    users = mysql.query_db(query)
-    for user in users:  # makes list of people not on court
-        names_of_users.append(user['first_name'])
-    for pairs in challenge_court["listofplayers"]:
-        for player in pairs:
-            playerslist.append(player)
-    return render_template('challenger.html', playerslist = playerslist, names_of_users=names_of_users, challenge=challenge_court)
+# @application.route("/challengecourt")
+# def challengecourt():
+#     if not 'loggedin' in session:
+#         session['loggedin'] = False
+#         return redirect('/loginpage')
+#     if session['loggedin']==False:
+#         return redirect('/loginpage')
+#     names_of_users = []  # list of users not on a court
+#     playerslist = []
+#     mysql = connectToMySQL(db)  # this is to create list of people not on a court
+#     query = "Select * FROM {}.users where onCourt = 0 ORDER BY first_name;".format(db)
+#     users = mysql.query_db(query)
+#     for user in users:  # makes list of people not on court
+#         names_of_users.append(user['first_name'])
+#     for pairs in challenge_court["listofplayers"]:
+#         for player in pairs:
+#             playerslist.append(player)
+#     return render_template('challenger.html', playerslist = playerslist, names_of_users=names_of_users, challenge=challenge_court)
 
 @application.route("/addtochallengecourt", methods=["POST"])
 def addtochallenge():
@@ -494,14 +497,14 @@ def addtochallenge():
         playersToAdd=[player1, player2]
         challenge_court["listofplayers"].append(playersToAdd)
         mysql = connectToMySQL(db)
-        query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, player1)
+        query = "update {}.users set onCourt=2 where first_name = '{}';".format(db, player1)
         mysql.query_db(query)
         mysql = connectToMySQL(db)
-        query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, player2)
+        query = "update {}.users set onCourt=2 where first_name = '{}';".format(db, player2)
         mysql.query_db(query)
     if not is_valid:
-        return redirect("/challengecourt")
-    return redirect('/challengecourt')
+        return redirect("/")
+    return redirect('/')
 
 @application.route("/champswon", methods=["POST"])
 def champswon():
@@ -510,7 +513,7 @@ def champswon():
         flash("Please wait for more people to sign up", "challengewinnererror")
         is_valid = False 
     if is_valid == False:
-        return redirect('/challengecourt')   
+        return redirect('/')   
     else:
         if challenge_court["listofplayers"]:
             mysql = connectToMySQL(db)
@@ -521,7 +524,7 @@ def champswon():
             mysql.query_db(query)
             challenge_court["listofplayers"].pop(1)
         challenge_court["streak"] = challenge_court["streak"] + 1
-    return redirect('/challengecourt')
+    return redirect('/')
 
 @application.route("/challengerswon", methods=["POST"])
 def challengerswon():
@@ -530,7 +533,7 @@ def challengerswon():
         flash("Please wait for more people to sign up", "challengewinnererror")
         is_valid = False 
     if is_valid == False:
-        return redirect('/challengecourt') 
+        return redirect('/') 
     else:
         mysql = connectToMySQL(db)
         query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["listofplayers"][0][0])
@@ -540,16 +543,16 @@ def challengerswon():
         mysql.query_db(query)
         challenge_court["streak"] = 1
         challenge_court["listofplayers"].pop(0)
-    return redirect('/challengecourt')
+    return redirect('/')
 
 @application.route("/champsretire", methods=["POST"])
 def champsretire():
     is_valid = True
-    if len(challenge_court["listofplayers"])<=1:
+    if len(challenge_court["listofplayers"])<1:
         flash("Please wait for more people to sign up", "challengewinnererror")
         is_valid = False 
     if is_valid == False:
-        return redirect('/challengecourt') 
+        return redirect('/') 
     else:
         mysql = connectToMySQL(db)
         query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["listofplayers"][0][0])
@@ -559,7 +562,7 @@ def champsretire():
         mysql.query_db(query)
         challenge_court["streak"] = 0
         challenge_court["listofplayers"].pop(0)
-    return redirect('/challengecourt')
+    return redirect('/')
 
 @application.route("/substituteplayer", methods=["POST"])
 def substituteplayer():
@@ -587,7 +590,7 @@ def substituteplayer():
         flash("Incorrect Pin for Subbed In Player", "challengesuberror")
         is_valid = False
     if is_valid == False:
-        return redirect('/challengecourt')  
+        return redirect('/')  
     else:
         for i in range(0, len(challenge_court["listofplayers"])):
             for j in range(0,len(challenge_court["listofplayers"][i])):
@@ -597,9 +600,9 @@ def substituteplayer():
                     query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, oldplayer)
                     mysql.query_db(query)
         mysql = connectToMySQL(db)
-        query = "update {}.users set onCourt=1 where first_name = '{}';".format(db, newplayer)
+        query = "update {}.users set onCourt=2 where first_name = '{}';".format(db, newplayer)
         mysql.query_db(query)
-    return redirect('/challengecourt')
+    return redirect('/')
 
 @application.route("/deletepair", methods=["POST"])
 def deletepair():
@@ -635,7 +638,7 @@ def deletepair():
                 if challenge_court["listofplayers"][i][j] == player1 or challenge_court["listofplayers"][i][j] == player1:
                     if challenge_court["listofplayers"][i][j+1] != player1 and challenge_court["listofplayers"][i][j+1] != player2:
                         flash("Players selected must be partners to be removed.", "challengedeleteerror")
-                        return redirect("/challengecourt")
+                        return redirect("/")
                     else:
                         mysql = connectToMySQL(db)
                         query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, player1)
@@ -646,10 +649,10 @@ def deletepair():
                         challenge_court["listofplayers"].pop(i)
                         if i == 0:
                             challenge_court["streak"] = 0
-                        return redirect("/challengecourt")
+                        return redirect("/")
     if not is_valid:
-        return redirect("/challengecourt")
-    return redirect("/challengecourt")
+        return redirect("/")
+    return redirect("/")
 
 @application.route("/reservecourt", methods=["POST"])
 def reservecourt():
