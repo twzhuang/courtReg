@@ -509,7 +509,7 @@ def addtochallenge():
 @application.route("/champswon", methods=["POST"])
 def champswon():
     is_valid = True
-    if len(challenge_court["listofplayers"])<=1:
+    if len(challenge_court["listofplayers"])<1:
         flash("Please wait for more people to sign up", "challengewinnererror")
         is_valid = False 
     if is_valid == False:
