@@ -29,9 +29,10 @@
     <div class="p-4 h-100">
         <header>
             <p>Current Time: <span id="clock"></span></p>
-            <h3>Note: If you checked in and your name does not appear on the list, please refresh the page by clicking this link! <a href='/'>Refresh Page</a></h3>
+            <h5>Note: If you checked in and your name does not appear on the list, please refresh the page by clicking this link! <a href='/'>Refresh Page</a></h5>
         </header>
-        <div class="container-fluid h-100">
+        <div class="row">
+        <div class="container-fluid h-100 col-9">
             <div class="row" style="height: 30%">
                 {% for i in range(1, courts_test|length + 1) %}
 
@@ -187,10 +188,9 @@
                 </form>
             </div>
         </div>
-        <hr>
-        <div class="p-1">
+        <div class="p-1 col-3">
             <div class="container row mb-3 justify-content-start">
-                <div class="col-6">
+                <!-- <div class="col-6">
                     <div class="row justify-content-start">
                         <div class="col-4 px-3">
                             <h3 class="">Champs</h3>
@@ -222,108 +222,130 @@
                         <input type="submit" value="Challengers" class="btn btn-success" formaction="/challengerswon">
                         <input type="submit" value="Champs Retired" class="btn btn-danger" formaction="/champsretire">
                     </form>
-                </div>
-                <div class="col-4">
+                </div> -->
+                <div class="">
                     <h3>Challenge Court List</h3>
+                    {% if challenge["listofplayers"][0]%}
+                    <div class="row m-1">
+                        <p>Champs: {{challenge["listofplayers"][0][0]}} and {{challenge["listofplayers"][0][1]}}</p>
+                        <form action="/champsretire" method="post" class="d-inline ml-1">
+                            <input type="submit" value="Remove" class="btn-danger">
+                        </form>
+                    </div>
+
+                    {% endif %}
+                    {% if challenge["listofplayers"][1]%}
+                    <div class="row m-1">
+                        <p>Challengers: {{challenge["listofplayers"][1][0]}} and {{challenge["listofplayers"][1][1]}}</p> 
+                        <form action="/challengerswon" method="post" class="d-inline ml-1">
+                            <input type="submit" value="Remove" class="btn-danger">
+                        </form>
+                    </div>
+                    {% endif %}
                     <ol>
                         {%for i in range(2, challenge["listofplayers"]|length)%}
-                            <li class="text-success">{{challenge["listofplayers"][i][0]}} and {{challenge["listofplayers"][i][1]}}</li>
+                            <li>{{challenge["listofplayers"][i][0]}} and {{challenge["listofplayers"][i][1]}}</li>
                         {%endfor%}
                     </ol>
+                    <hr>
+                    <form class="form-group" action="/addtochallengecourt" method="post">
+                        <h3>Challenge Court Sign Up</h3>
+                        {% with messages = get_flashed_messages(category_filter=["challengeerror"]) %}
+                        {% if messages %}
+                            <ul class=flashes>
+                            {% for message in messages %}
+                                <li class=text-danger>{{ message }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% endwith %}
+                        <label for="player1">Select Player 1:</label>
+                        <select id="player1" name="player1" required>
+                            {% for user in names_of_users%}
+                                <option value="{{user}}">{{user}}</option>
+                            {% endfor %}
+                        </select><br>
+                        <label for="player1pin">Enter Player 1's Pin:</label>
+                        <input type="number" id="player1pin" name="player1pin" required><br>
+                        <label for="player2">Select Player 2:</label>
+                        <select id="player2" name="player2" required>
+                            {% for user in names_of_users%}
+                                <option value="{{user}}">{{user}}</option>
+                            {% endfor %}
+                        </select><br>
+                        <label for="player2pin">Enter Player 2's Pin:</label>
+                        <input type="number" id="player2pin" name="player2pin" required><br>
+                        <input type="submit" class="btn btn-primary">
+                    </form>
+                    <form class="form-group" action="/substituteplayer" method="post">
+                        <h3>Partner Swap</h3>
+                        {% with messages = get_flashed_messages(category_filter=["challengesuberror"]) %}
+                        {% if messages %}
+                            <ul class=flashes>
+                            {% for message in messages %}
+                                <li class=text-danger>{{ message }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% endwith %}
+                        <label for="oldplayer">Select Old Player:</label>
+                        <select id="oldplayer" name="oldplayer" required>
+                            {% for user in playerslist%}
+                                <option value="{{user}}">{{user}}</option>
+                            {% endfor %}
+                        </select><br>
+                        <label for="oldplayerpin">Enter Old Player's Pin:</label>
+                        <input type="number" id="oldplayerpin" name="oldplayerpin" required><br>
+                        <label for="newplayer">Select New Player:</label>
+                        <select id="newplayer" name="newplayer" required>
+                            {% for user in names_of_users%}
+                                <option value="{{user}}">{{user}}</option>
+                            {% endfor %}
+                        </select><br>
+                        <label for="newplayerpin">New Player's Pin:</label>
+                        <input type="number" id="newplayerpin" name="newplayerpin" required><br>
+                        <input type="submit" class="btn btn-primary">
+                    </form>
+                    <form class="form-group" action="/deletepair" method="post">
+                        <h3>Remove Entire Pair from List</h3>
+                        {% with messages = get_flashed_messages(category_filter=["challengedeleteerror"]) %}
+                        {% if messages %}
+                            <ul class=flashes>
+                            {% for message in messages %}
+                                <li class=text-danger>{{ message }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% endwith %}
+                        <label for="player1">Select Player 1's Name:</label>
+                        <select id="player1" name="player1" required>
+                            {% for user in playerslist%}
+                                <option value="{{user}}">{{user}}</option>
+                            {% endfor %}
+                        </select><br>
+                        <label for="player1pin">Enter Player 1's Pin:</label>
+                        <input type="number" id="player1pin" name="player1pin" required><br>
+                        <label for="player2">Select Player 2's Name:</label>
+                        <select id="player2" name="player2" required>
+                            {% for user in playerslist%}
+                                <option value="{{user}}">{{user}}</option>
+                            {% endfor %}
+                        </select><br>
+                        <label for="player2pin">Enter Player 2's Pin:</label>
+                        <input type="number" id="player2pin" name="player2pin" required><br>
+                        <input type="submit" class="btn btn-primary">
+                    </form>
                 </div>
             </div>
             <br>
 
             <div class="row justify-content-start px-3">
-                <form class="form-group col-4" action="/addtochallengecourt" method="post">
-                    <h3>Challenge Court Sign Up</h3>
-                    {% with messages = get_flashed_messages(category_filter=["challengeerror"]) %}
-                    {% if messages %}
-                        <ul class=flashes>
-                        {% for message in messages %}
-                            <li class=text-danger>{{ message }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
-                    {% endwith %}
-                    <label for="player1">Select Player 1:</label>
-                    <select id="player1" name="player1" required>
-                        {% for user in names_of_users%}
-                            <option value="{{user}}">{{user}}</option>
-                        {% endfor %}
-                    </select><br>
-                    <label for="player1pin">Enter Player 1's Pin:</label>
-                    <input type="number" id="player1pin" name="player1pin" required><br>
-                    <label for="player2">Select Player 2:</label>
-                    <select id="player2" name="player2" required>
-                        {% for user in names_of_users%}
-                            <option value="{{user}}">{{user}}</option>
-                        {% endfor %}
-                    </select><br>
-                    <label for="player2pin">Enter Player 2's Pin:</label>
-                    <input type="number" id="player2pin" name="player2pin" required><br>
-                    <input type="submit" class="btn btn-primary">
-                </form>
-                <form class="form-group col-4" action="/substituteplayer" method="post">
-                    <h3>Partner Swap</h3>
-                    {% with messages = get_flashed_messages(category_filter=["challengesuberror"]) %}
-                    {% if messages %}
-                        <ul class=flashes>
-                        {% for message in messages %}
-                            <li class=text-danger>{{ message }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
-                    {% endwith %}
-                    <label for="oldplayer">Select Player to Substitute:</label>
-                    <select id="oldplayer" name="oldplayer" required>
-                        {% for user in playerslist%}
-                            <option value="{{user}}">{{user}}</option>
-                        {% endfor %}
-                    </select><br>
-                    <label for="oldplayerpin">Enter Subbed Out Player's Pin:</label>
-                    <input type="number" id="oldplayerpin" name="oldplayerpin" required><br>
-                    <label for="newplayer">Select a New Player:</label>
-                    <select id="newplayer" name="newplayer" required>
-                        {% for user in names_of_users%}
-                            <option value="{{user}}">{{user}}</option>
-                        {% endfor %}
-                    </select><br>
-                    <label for="newplayerpin">Enter New Player's Pin:</label>
-                    <input type="number" id="newplayerpin" name="newplayerpin" required><br>
-                    <input type="submit" class="btn btn-primary">
-                </form>
-                <form class="form-group col-4" action="/deletepair" method="post">
-                    <h3>Remove Entire Pair from List</h3>
-                    {% with messages = get_flashed_messages(category_filter=["challengedeleteerror"]) %}
-                    {% if messages %}
-                        <ul class=flashes>
-                        {% for message in messages %}
-                            <li class=text-danger>{{ message }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
-                    {% endwith %}
-                    <label for="player1">Select Player 1's Name:</label>
-                    <select id="player1" name="player1" required>
-                        {% for user in playerslist%}
-                            <option value="{{user}}">{{user}}</option>
-                        {% endfor %}
-                    </select><br>
-                    <label for="player1pin">Enter Player 1's Pin:</label>
-                    <input type="number" id="player1pin" name="player1pin" required><br>
-                    <label for="player2">Select Player 2's Name:</label>
-                    <select id="player2" name="player2" required>
-                        {% for user in playerslist%}
-                            <option value="{{user}}">{{user}}</option>
-                        {% endfor %}
-                    </select><br>
-                    <label for="player2pin">Enter Player 2's Pin:</label>
-                    <input type="number" id="player2pin" name="player2pin" required><br>
-                    <input type="submit" class="btn btn-primary">
-                </form>
+                
+                
             </div>
         </div>
+    </div>
+        
     <!--Not sure if the two forms need unique id for names and passwords-->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
