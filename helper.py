@@ -3,7 +3,7 @@ from mysqlconnection import connectToMySQL
 from datetime import timedelta, datetime
 from flask import flash
 
-ONE_PLAYER_TIME = 3
+ONE_PLAYER_TIME = 1
 TWO_PLAYER_TIME = 15
 THREE_PLAYER_TIME = 20
 FOUR_PLAYER_TIME = 25
@@ -45,7 +45,8 @@ def generate_court():
             "end_time": "",
             "players": [],
             "reserved": False
-        }
+        },
+        "lastrequesttime": 0
     }
     return court_info
 

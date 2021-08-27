@@ -3,6 +3,7 @@ from mysqlconnection import connectToMySQL
 from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time, move_players_on_current_court, move_players_on_next_on_list)
 import sys
 from datetime import datetime
+import time
 import logging
 
 application = Flask(__name__)
@@ -412,39 +413,46 @@ def update_court():
     court_num = data["court_number"]
     court_info = courts_test["court" + str(court_num)]
     print("current end time is " + court_info["current"]["end_time"])
-
-    # Remove players from the court in db
-    for player in court_info["current"]["players"]:
-        remove_user_from_db(db, player)
-
-    # Move "next on" players to "currently on"
-    court_info["current"] = court_info["next"]
-
-    if court_info["nextnext"]:
-        court_info['next'] = court_info['nextnext']
-        court_info["nextnext"] = {
-            "start_time": "",
-            "end_time": "",
-            "players": [],
-            "reserved": False
-        }
+    currenttime = time.time()
+    if (currenttime - court_info["lastrequesttime"])<=3:
+        return redirect("/")
+    if court_info["lastrequesttime"]==0:
+        court_info["lastrequesttime"]=currenttime
+        print(court_info["lastrequesttime"])
     else:
-        court_info["next"] = {
-            "start_time": "",
-            "end_time": "",
-            "players": [],
-            "reserved": False
-        }
+        court_info["lastrequesttime"]=currenttime
+    # Remove players from the court in db
+        for player in court_info["current"]["players"]:
+            remove_user_from_db(db, player)
 
-    # Set start time and end time for new players on court
-    if court_info["current"]["players"]:
-        start_time = datetime.utcnow()
-        court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
-        court_info["current"]["end_time"] = calculate_end_time(
-            len(court_info["current"]["players"]),
-            start_time,
-        )
-    return redirect("/")
+        # Move "next on" players to "currently on"
+        court_info["current"] = court_info["next"]
+
+        if court_info["nextnext"]:
+            court_info['next'] = court_info['nextnext']
+            court_info["nextnext"] = {
+                "start_time": "",
+                "end_time": "",
+                "players": [],
+                "reserved": False
+            }
+        else:
+            court_info["next"] = {
+                "start_time": "",
+                "end_time": "",
+                "players": [],
+                "reserved": False
+            }
+
+        # Set start time and end time for new players on court
+        if court_info["current"]["players"]:
+            start_time = datetime.utcnow()
+            court_info["current"]["start_time"] = start_time.strftime("%I:%M:%S %p").lstrip("0")
+            court_info["current"]["end_time"] = calculate_end_time(
+                len(court_info["current"]["players"]),
+                start_time,
+            )
+        return redirect("/")
 
 # @application.route("/challengecourt")
 # def challengecourt():
