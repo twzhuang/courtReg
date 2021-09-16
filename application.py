@@ -187,6 +187,7 @@ def remove_user_from_court():
     if not is_valid:
         return redirect("/")
     else:
+        break_loop = False
         for court_num, court in courts_test.items():
             for current_or_next, court_info in court.items():
                 if name_selected in court_info['players']:
@@ -209,6 +210,10 @@ def remove_user_from_court():
                     elif current_or_next == "next":
                         if not court_info["players"]:
                             move_players_on_next_on_list(courts_test[court_num])
+                    break_loop = True
+                    break
+                if break_loop:
+                    break
 
     return redirect("/")
 

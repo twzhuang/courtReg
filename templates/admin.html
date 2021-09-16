@@ -167,12 +167,6 @@
                         console.log("POST REQUEST RECEIVED SUCCESSFULLY")
                         window.location.reload();
                     }
-                    else if (xhttp.status == 400) {
-                       alert('There was an error 400');
-                    }
-                    else {
-                        alert('something else other than 200 was returned');
-                    }
                 }
             };
             xhttp.send(JSON.stringify({court_number: courtNum}))
