@@ -189,8 +189,11 @@ def remove_user_from_court():
     else:
         break_loop = False
         for court_num, court in courts_test.items():
+            print(f"COURT NUM: {court_num}", file=sys.stderr)
             for current_or_next, court_info in court.items():
-                if name_selected in court_info['players']:
+                print(f"CURRENT OR NEXT: {current_or_next} COURT INFO: {court_info}", file=sys.stderr)
+                if current_or_next != "lastrequesttime" and name_selected in court_info['players']:
+                    print("PLAYER FOUND", file=sys.stderr)
                     court_info['players'].remove(name_selected)
                     remove_user_from_db(db, name_selected)
 
@@ -210,6 +213,7 @@ def remove_user_from_court():
                     elif current_or_next == "next":
                         if not court_info["players"]:
                             move_players_on_next_on_list(courts_test[court_num])
+                    print("BREAKING LOOP", file=sys.stderr)
                     break_loop = True
                     break
                 if break_loop:
