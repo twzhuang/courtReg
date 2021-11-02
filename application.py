@@ -177,7 +177,9 @@ def remove_user_from_court():
     query = "SELECT * FROM {}.users where first_name = '{}';".format(db, name_selected)
     user = mysql.query_db(query)
     is_valid = True
-
+    if user[0]["onCourt"]!=1:
+        flash("User is not currently signed up on a court", "removeerror")
+        is_valid = False
     if pin_entered < 1:
         flash("This field is required", "removeerror")
         is_valid = False
@@ -189,11 +191,8 @@ def remove_user_from_court():
     else:
         break_loop = False
         for court_num, court in courts_test.items():
-            print(f"COURT NUM: {court_num}", file=sys.stderr)
             for current_or_next, court_info in court.items():
-                print(f"CURRENT OR NEXT: {current_or_next} COURT INFO: {court_info}", file=sys.stderr)
-                if current_or_next != "lastrequesttime" and name_selected in court_info['players']:
-                    print("PLAYER FOUND", file=sys.stderr)
+                if name_selected in court_info['players']:
                     court_info['players'].remove(name_selected)
                     remove_user_from_db(db, name_selected)
 
@@ -213,7 +212,6 @@ def remove_user_from_court():
                     elif current_or_next == "next":
                         if not court_info["players"]:
                             move_players_on_next_on_list(courts_test[court_num])
-                    print("BREAKING LOOP", file=sys.stderr)
                     break_loop = True
                     break
                 if break_loop:
@@ -306,6 +304,9 @@ def add_user_to_court():
     user = mysql.query_db(query)
     print("USER {}".format(user), file=sys.stderr)
 
+    if user[0]["onCourt"]!=0:
+        flash("User is already signed up", "adderror")
+        is_valid = False
     if pin_entered < 1:
         flash("Pin is required", "adderror")
         is_valid = False
@@ -315,6 +316,8 @@ def add_user_to_court():
     elif selected_court_info["current"]["reserved"]==True:
         flash("Court is Reserved. Please sign up for another court", "adderror")
         is_valid = False
+    if not is_valid:
+        return redirect("/")
     else:
         # Check if court is currently empty
         # If yes, then user should not be able to select 'next on'
@@ -498,6 +501,12 @@ def addtochallenge():
     if player1==player2:
         flash("Player 1 and Player 2 names must be different", "challengeerror")
         is_valid = False
+    elif player1info[0]["onCourt"]!=0:
+        flash("Player 1 is already signed up", "challengeerror")
+        is_valid = False
+    elif player2info[0]["onCourt"]!=0:
+        flash("Player 2 is already signed up", "challengeerror")
+        is_valid = False
     elif pin1 < 1:
         flash("Pin is required for Player 1", "challengeerror")
         is_valid = False
@@ -597,6 +606,12 @@ def substituteplayer():
     if oldplayerpin < 1:
         flash("Pin is required for Subbed Out Player", "challengesuberror")
         is_valid = False
+    elif newplayerinfo[0]["onCourt"]!=0:
+        flash("New Player is already signed up", "challengesuberror")
+        is_valid = False
+    elif oldplayerinfo[0]["onCourt"]!=2:
+        flash("Old Player is not on challenge court", "challengesuberror")
+        is_valid = False    
     elif oldplayerpin != oldplayerinfo[0]['pin']:
         flash("Incorrect Pin for Subbed Out Player", "challengesuberror")
         is_valid = False
@@ -636,6 +651,12 @@ def deletepair():
     player2info = mysql.query_db(query)
     if player1==player2:
         flash("Player 1 and Player 2 names must be different", "challengedeleteerror")
+        is_valid = False
+    elif player1info[0]['onCourt']!=2:
+        flash("Player 1 is not currently on the challenge court", "challengedeleteerror")
+        is_valid = False
+    elif player2info[0]['onCourt']!=2:
+        flash("Player 2 is not currently on the challenge court", "challengedeleteerror")
         is_valid = False
     elif pin1 < 1:
         flash("Pin is required for Player 1", "challengedeleteerror")

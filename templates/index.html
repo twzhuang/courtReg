@@ -104,7 +104,7 @@
                         <div class="form-check form-check-inline">
                             <label>Select Court Number:</label>
                             <div class="form-check">
-                                <input type="radio" class="form-check-input" id="radioCourt1" name="courtNum" value="court1" checked>
+                                <input type="radio" class="form-check-input" id="radioCourt1" name="courtNum" value="court1" required>
                                 <label class="form-check-label" for="radioCourt1">1</label>
                             </div>
                             <div class="form-check">
@@ -141,7 +141,7 @@
                         <div class="form-check form-check-inline">
                             <label>Choose to be on court now or up next: </label>
                             <div class="form-check">
-                                <input type="radio" class="form-check-input" id="radioCurrent" name="current_or_next" value="current" checked>
+                                <input type="radio" class="form-check-input" id="radioCurrent" name="current_or_next" value="current" required>
                                 <label class="form-check-label" for="radioCurrent">Current</label>
                             </div>
                             <div class="form-check">
@@ -161,7 +161,7 @@
                     <input type="submit" class="btn btn-primary">
                 </form>
     
-                <form class="col" action="/removeUserFromCourt" method="post">
+                <!-- <form class="col" action="/removeUserFromCourt" method="post">
                     <h2>Remove yourself from a court</h2>
                     {% with messages = get_flashed_messages(category_filter=["removeerror"]) %}
                     {% if messages %}
@@ -185,7 +185,7 @@
                         <input type="number" id="userPinRemove" name="userPinRemove" required>
                     </p>
                     <input type="submit" class="btn btn-primary">
-                </form>
+                </form> -->
             </div>
         </div>
         <div class="p-1 col-3">
@@ -229,7 +229,9 @@
                     <div class="row m-1">
                         <p>Champs: {{challenge["listofplayers"][0][0]}} and {{challenge["listofplayers"][0][1]}}</p>
                         <form action="/champsretire" method="post" class="d-inline ml-1">
-                            <input type="submit" value="Remove" class="btn-danger">
+                            <p hidden name="champ1">{{challenge["listofplayers"][0][0]}} </p>
+                            <p hidden name="champ2">{{challenge["listofplayers"][0][1]}} </p>
+                            <input type="submit" value="Remove" class="btn btn-danger">
                         </form>
                     </div>
 
@@ -238,7 +240,9 @@
                     <div class="row m-1">
                         <p>Challengers: {{challenge["listofplayers"][1][0]}} and {{challenge["listofplayers"][1][1]}}</p> 
                         <form action="/challengerswon" method="post" class="d-inline ml-1">
-                            <input type="submit" value="Remove" class="btn-danger">
+                            <p hidden name="challenger1">{{challenge["listofplayers"][1][0]}} </p>
+                            <p hidden name="challenger2">{{challenge["listofplayers"][1][1]}} </p>
+                            <input type="submit" value="Remove" class="btn btn-danger">
                         </form>
                     </div>
                     {% endif %}

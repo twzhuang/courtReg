@@ -4,8 +4,8 @@ from datetime import timedelta, datetime
 from flask import flash
 
 ONE_PLAYER_TIME = 1
-TWO_PLAYER_TIME = 15
-THREE_PLAYER_TIME = 20
+TWO_PLAYER_TIME = 10
+THREE_PLAYER_TIME = 15
 FOUR_PLAYER_TIME = 25
 
 
