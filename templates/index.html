@@ -15,6 +15,15 @@
         .reserved{
             background-color: gray;
         }
+        input[type=radio] {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+
+        }
+        .radioButton label {
+            vertical-align: middle;
+        }
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
@@ -105,35 +114,35 @@
                             <label>Select Court Number:</label>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt1" name="courtNum" value="court1" required>
-                                <label class="form-check-label" for="radioCourt1">1</label>
+                                <label class="form-check-label radioButton" for="radioCourt1">1</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt2" name="courtNum" value="court2">
-                                <label class="form-check-label" for="radioCourt2">2</label>
+                                <label class="form-check-label radioButton" for="radioCourt2">2</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt3" name="courtNum" value="court3">
-                                <label class="form-check-label" for="radioCourt3">3</label>
+                                <label class="form-check-label radioButton" for="radioCourt3">3</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt4" name="courtNum" value="court4">
-                                <label class="form-check-label" for="radioCourt4">4</label>
+                                <label class="form-check-label radioButton" for="radioCourt4">4</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt5" name="courtNum" value="court5">
-                                <label class="form-check-label" for="radioCourt5">5</label>
+                                <label class="form-check-label radioButton" for="radioCourt5">5</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt6" name="courtNum" value="court6">
-                                <label class="form-check-label" for="radioCourt6">6</label>
+                                <label class="form-check-label radioButton" for="radioCourt6">6</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt7" name="courtNum" value="court7">
-                                <label class="form-check-label" for="radioCourt7">7</label>
+                                <label class="form-check-label radioButton" for="radioCourt7">7</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCourt8" name="courtNum" value="court8">
-                                <label class="form-check-label" for="radioCourt8">8</label>
+                                <label class="form-check-label radioButton" for="radioCourt8">8</label>
                             </div>
                         </div>
                     </div>
@@ -142,15 +151,15 @@
                             <label>Choose to be on court now or up next: </label>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioCurrent" name="current_or_next" value="current" required>
-                                <label class="form-check-label" for="radioCurrent">Current</label>
+                                <label class="form-check-label radioButton" for="radioCurrent">Current</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioNext" name="current_or_next" value="next">
-                                <label class="form-check-label" for="radioNext">Next On</label>
+                                <label class="form-check-label radioButton" for="radioNext">Next On</label>
                             </div>
                             <div class="form-check">
                                 <input type="radio" class="form-check-input" id="radioNextNExt" name="current_or_next" value="nextnext">
-                                <label class="form-check-label" for="radioNextNext">Next Next On</label>
+                                <label class="form-check-label radioButton" for="radioNextNext">Next Next On</label>
                             </div>
                         </div>
                     </div>
@@ -161,7 +170,7 @@
                     <input type="submit" class="btn btn-primary">
                 </form>
     
-                <!-- <form class="col" action="/removeUserFromCourt" method="post">
+                <form class="col" action="/removeUserFromCourt" method="post">
                     <h2>Remove yourself from a court</h2>
                     {% with messages = get_flashed_messages(category_filter=["removeerror"]) %}
                     {% if messages %}
@@ -185,7 +194,7 @@
                         <input type="number" id="userPinRemove" name="userPinRemove" required>
                     </p>
                     <input type="submit" class="btn btn-primary">
-                </form> -->
+                </form>
             </div>
         </div>
         <div class="p-1 col-3">
@@ -314,6 +323,7 @@
                         <h3>Remove Entire Pair from List</h3>
                         {% with messages = get_flashed_messages(category_filter=["challengedeleteerror"]) %}
                         {% if messages %}
+                            <ul class=flashes>
                             <ul class=flashes>
                             {% for message in messages %}
                                 <li class=text-danger>{{ message }}</li>

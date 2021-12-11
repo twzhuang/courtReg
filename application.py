@@ -1,6 +1,14 @@
 from flask import Flask, render_template, redirect, request, session, flash
 from mysqlconnection import connectToMySQL
-from helper import (court_is_full, generate_court, remove_user_from_db, calculate_end_time, move_players_on_current_court, move_players_on_next_on_list)
+from helper import (
+    court_is_full,
+    generate_court,
+    remove_user_from_db,
+    calculate_end_time,
+    move_players_on_current_court,
+    move_players_on_next_on_list,
+    remove_player_from_court,
+)
 import sys
 from datetime import datetime
 import time
@@ -17,7 +25,7 @@ db = "ebc_schema"
 # challenge court dictionary
 challenge_court = {
     "streak": 0,
-    #this will be a list of dictionaries containing two player names
+    # this will be a list of dictionaries containing two player names
     "listofplayers": [] 
 }
 
@@ -189,33 +197,7 @@ def remove_user_from_court():
     if not is_valid:
         return redirect("/")
     else:
-        break_loop = False
-        for court_num, court in courts_test.items():
-            for current_or_next, court_info in court.items():
-                if name_selected in court_info['players']:
-                    court_info['players'].remove(name_selected)
-                    remove_user_from_db(db, name_selected)
-
-                    # check if court selection is current
-                    if current_or_next == "current":
-                        # if not empty update end time
-                        if court_info["players"]:
-                            court_info['end_time'] = calculate_end_time(
-                                len(court_info['players']),
-                                datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
-                            )
-                        # if empty, reset court and move next on players
-                        else:
-                            move_players_on_current_court(courts_test[court_num])
-
-                    #if next is empty, move next next on to up next        
-                    elif current_or_next == "next":
-                        if not court_info["players"]:
-                            move_players_on_next_on_list(courts_test[court_num])
-                    break_loop = True
-                    break
-                if break_loop:
-                    break
+        remove_player_from_court(courts_test, db, name_selected)
 
     return redirect("/")
 
@@ -223,27 +205,7 @@ def remove_user_from_court():
 @application.route("/adminRemove", methods=["POST"])
 def admin_remove():
     name_selected = request.form["player_to_remove"]
-    for court_num, court in courts_test.items():
-        for current_or_next, court_info in court.items():
-            if name_selected in court_info['players']:
-                court_info['players'].remove(name_selected)
-                remove_user_from_db(db, name_selected)
-
-                if current_or_next == "current":
-                        # if not empty update end time
-                    if court_info["players"]:
-                        court_info['end_time'] = calculate_end_time(
-                            len(court_info['players']),
-                            datetime.strptime(court_info['start_time'], "%I:%M:%S %p"),
-                        )
-                    # if empty, reset court and move next on players
-                    else:
-                        move_players_on_current_court(courts_test[court_num])
-
-                    #if next is empty, move next next on to up next        
-                elif current_or_next == "next":
-                    if not court_info["players"]:
-                        move_players_on_next_on_list(courts_test[court_num])
+    remove_player_from_court(courts_test, db, name_selected)
     return redirect("/admin")
 
 @application.route("/updateUser", methods=["POST"])
@@ -562,13 +524,13 @@ def challengerswon():
         return redirect('/') 
     else:
         mysql = connectToMySQL(db)
-        query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["listofplayers"][0][0])
+        query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["listofplayers"][1][0])
         mysql.query_db(query)
         mysql = connectToMySQL(db)
-        query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["listofplayers"][0][1])
+        query = "update {}.users set onCourt=0 where first_name = '{}';".format(db, challenge_court["listofplayers"][1][1])
         mysql.query_db(query)
         challenge_court["streak"] = 1
-        challenge_court["listofplayers"].pop(0)
+        challenge_court["listofplayers"].pop(1)
     return redirect('/')
 
 @application.route("/champsretire", methods=["POST"])
