@@ -692,7 +692,7 @@ def opencourt():
 # @application.route("/addnewlogin")
 # def newlogin():
 #     mysql = connectToMySQL(db)
-#     query = 'insert into admins (username, password) Values ("ebcaccess", "ebc33540");'
+#     query = 'UPDATE admins SET password = "ebc33540" WHERE username = "ebcaccess";'
 #     mysql.query_db(query)
 #     print("***************************")
 #     return redirect('/')
